@@ -8,6 +8,7 @@ export async function GET(request: Request) {
   const category = searchParams.get("category");
   const viral = searchParams.get("viral");
   const isNew = searchParams.get("new");
+  const country = searchParams.get("country");
   const limit = Math.min(parseInt(searchParams.get("limit") ?? "20"), 100);
   const offset = parseInt(searchParams.get("offset") ?? "0");
 
@@ -15,6 +16,7 @@ export async function GET(request: Request) {
   if (category) where.category = category;
   if (viral === "true") where.isViral = true;
   if (isNew === "true") where.isNew = true;
+  if (country) where.country = country.toUpperCase();
 
   const [trends, total] = await Promise.all([
     prisma.trend.findMany({

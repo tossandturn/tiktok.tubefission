@@ -1,0 +1,86 @@
+name: TikTok Scraper
+
+on:
+  schedule:
+    # Run every 6 hours (UTC)
+    # Times: 00:00, 06:00, 12:00, 18:00 UTC
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+    # Allow manual trigger
+    inputs:
+      mode:
+        description: 'Scrape mode'
+        required: true
+        default: 'full'
+        type: choice
+        options:
+          - discover
+          - update
+          - full
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    name: Run TikTok Scraper
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Scraper (Discover)
+        if: github.event_name == 'schedule' || inputs.mode == 'discover' || inputs.mode == 'full'
+        run: |
+          echo "Running discover scrape..."
+          curl -s -X GET "https://tiktok-intelligence-eta.vercel.app/api/cron/scrape?key=${{ secrets.CRON_SECRET_KEY }}&mode=discover" \
+            -H "User-Agent: GitHub-Actions-Scraper/1.0" \
+            --max-time 300 \
+            -o discover_response.json \
+            -w "HTTP Status: %{http_code}\n"
+          cat discover_response.json
+          echo ""
+          echo "Discover scrape completed"
+
+      - name: Wait between requests
+        if: github.event_name == 'schedule' || inputs.mode == 'full'
+        run: |
+          echo "Waiting 30 seconds between requests..."
+          sleep 30
+
+      - name: Run Scraper (Update)
+        if: github.event_name == 'schedule' || inputs.mode == 'update' || inputs.mode == 'full'
+        run: |
+          echo "Running update scrape..."
+          curl -s -X GET "https://tiktok-intelligence-eta.vercel.app/api/cron/scrape?key=${{ secrets.CRON_SECRET_KEY }}&mode=update" \
+            -H "User-Agent: GitHub-Actions-Scraper/1.0" \
+            --max-time 300 \
+            -o update_response.json \
+            -w "HTTP Status: %{http_code}\n"
+          cat update_response.json
+          echo ""
+          echo "Update scrape completed"
+
+      - name: Upload response logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scrape-logs
+          path: |
+            discover_response.json
+            update_response.json
+          retention-days: 7
+
+      - name: Check for errors
+        if: always()
+        run: |
+          if [ -f "discover_response.json" ]; then
+            if grep -q '"success":false' discover_response.json 2>/dev/null; then
+              echo "Discover scrape reported failure"
+              exit 1
+            fi
+          fi
+          if [ -f "update_response.json" ]; then
+            if grep -q '"success":false' update_response.json 2>/dev/null; then
+              echo "Update scrape reported failure"
+              exit 1
+            fi
+          fi
+          echo "All scrapes completed successfully"

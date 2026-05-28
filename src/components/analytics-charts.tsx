@@ -15,10 +15,18 @@ import {
   Area,
 } from "recharts";
 import { TrendingUp, PieChart as PieIcon, Activity } from "lucide-react";
-import type { Trend } from "@/lib/data";
+
+interface ChartTrend {
+  id: string;
+  title: string;
+  category: string;
+  growthRate: number;
+  viralScore?: number;
+  engagement?: number;
+}
 
 interface AnalyticsChartsProps {
-  trends: Trend[];
+  trends: ChartTrend[];
 }
 
 const COLORS = ["#00f2ea", "#ff0050", "#25f4ee", "#fe2c55", "#ffffff", "#8884d8", "#82ca9d", "#ffc658"];

@@ -11,6 +11,7 @@ import { StructuredData } from "@/components/structured-data";
 import { TikTokEmbed } from "@/components/tiktok-embed";
 import { RefreshIndicator } from "@/components/refresh-indicator";
 import { trends } from "@/lib/data";
+import { TrendHistoryChart } from "@/components/trend-history-chart";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -130,40 +131,59 @@ export default async function TrendPage({ params }: Props) {
         <RefreshIndicator />
       </div>
 
-      {/* Hero Image */}
-      <div className="relative aspect-[4/5] w-full">
+      {/* Hero Image — Click to search on TikTok */}
+      <a
+        href={`https://www.tiktok.com/search?q=${encodeURIComponent(trend.tags[0]?.replace('#', '') || trend.title)}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="relative aspect-[4/5] w-full block cursor-pointer group"
+      >
         <Image
           src={trend.thumbnail}
           alt={trend.title}
           fill
-          className="object-cover"
+          className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
           sizes="(max-width: 768px) 100vw, 512px"
           priority
         />
         <div className="absolute inset-0 bg-gradient-to-t from-tiktok-black via-transparent to-transparent" />
 
+        {/* TikTok overlay on hover */}
+        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+          <div className="flex flex-col items-center gap-2">
+            <svg viewBox="0 0 32 32" fill="none" className="w-12 h-12">
+              <path
+                d="M24.5 8.5c-2.5 0-4.8-1.3-6.1-3.3v11.8c0 5.2-4.2 9.5-9.5 9.5S-.6 22.2-.6 17s4.2-9.5 9.5-9.5c.5 0 1 0 1.5.1v5.2c-.5-.1-1-.2-1.5-.2-2.4 0-4.3 1.9-4.3 4.3s1.9 4.3 4.3 4.3 4.3-1.9 4.3-4.3V0h5.1c.7 3.2 3.2 5.7 6.4 6.4v2.1z"
+                transform="translate(6, 4)"
+                fill="#00f2ea"
+              />
+            </svg>
+            <span className="text-white font-semibold text-sm">View on TikTok</span>
+          </div>
+        </div>
+
         {/* Country badge */}
         {trend.country && (
-          <div className="absolute top-4 left-4 flex items-center gap-1 bg-black/60 backdrop-blur-sm text-white text-xs font-medium px-2 py-1 rounded-full">
+          <div className="absolute top-4 left-4 flex items-center gap-1 bg-black/60 backdrop-blur-sm text-white text-xs font-medium px-2 py-1 rounded-full pointer-events-none">
             <Globe className="w-3 h-3" />
             {trend.country}
           </div>
         )}
 
         {/* Growth badge */}
-        <div className="absolute top-4 right-4 bg-tiktok-cyan/90 backdrop-blur-sm text-tiktok-black text-sm font-bold px-3 py-1.5 rounded-full flex items-center gap-1">
+        <div className="absolute top-4 right-4 bg-tiktok-cyan/90 backdrop-blur-sm text-tiktok-black text-sm font-bold px-3 py-1.5 rounded-full flex items-center gap-1 pointer-events-none">
           <TrendingUp className="w-4 h-4" />
           +{trend.growthRate}%
         </div>
 
         {/* Title overlay */}
-        <div className="absolute bottom-0 left-0 right-0 p-4">
+        <div className="absolute bottom-0 left-0 right-0 p-4 pointer-events-none">
           <h1 className="text-2xl font-bold text-white leading-tight mb-2">
             {trend.title}
           </h1>
           <FloatingTags tags={trend.tags} />
         </div>
-      </div>
+      </a>
 
       {/* Stats Bar */}
       <div className="px-4 py-4 flex items-center justify-between border-b border-white/5">
@@ -271,6 +291,12 @@ export default async function TrendPage({ params }: Props) {
             </div>
           </div>
         </div>
+
+        {/* Trend History Chart */}
+        <TrendHistoryChart
+          trendId={trend.id}
+          growthRate={trend.growthRate}
+        />
 
         {/* Why it blows up + Action time */}
         {(trend.whyItBlowsUp || trend.actionTime) && (

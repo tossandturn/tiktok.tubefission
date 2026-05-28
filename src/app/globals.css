@@ -13,6 +13,26 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+  .glass {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+  .glass-card {
+    background: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .glass-card:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+  .text-gradient {
+    background: linear-gradient(135deg, #00f2ea 0%, #ff0050 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
 }
 
 @layer base {
@@ -37,6 +57,11 @@
     --input: 0 0% 100%;
     --ring: 0 0% 60%;
     --radius: 0.75rem;
+    /* TikTok colors */
+    --tiktok-cyan: #00f2ea;
+    --tiktok-pink: #ff0050;
+    --tiktok-black: #000000;
+    --tiktok-white: #ffffff;
   }
   * {
     border-color: hsl(var(--border) / 6%);

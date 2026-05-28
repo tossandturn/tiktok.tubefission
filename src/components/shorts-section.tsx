@@ -14,6 +14,7 @@ interface Short {
   shortsScore: number;
   curiosityGap?: string;
   videoId?: string;
+  trendId?: string;
 }
 
 interface ShortsSectionProps {
@@ -44,7 +45,7 @@ export function ShortsSection({ shorts }: ShortsSectionProps) {
             className="flex-shrink-0 w-[140px] snap-start"
           >
             <Link
-              href={short.videoId ? `/trend/${short.id}` : "#"}
+              href={short.trendId ? `/trend/${short.trendId}` : "#"}
               className="block group"
             >
               <div className="relative aspect-[9/16] rounded-xl overflow-hidden bg-white/5 group cursor-pointer">

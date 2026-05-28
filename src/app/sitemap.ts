@@ -1,23 +1,19 @@
 import { MetadataRoute } from "next";
+import { trends } from "@/lib/data";
 
 const BASE_URL = "https://tiktok-intelligence.com";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const routes = [
-    "",
-    "/explore",
-    "/trend/viral-dance-challenge-2026",
-    "/trend/ai-voice-filter-hack",
-    "/trend/cinematic-transition-pack",
-    "/trend/productivity-hack-morning",
-    "/trend/food-asmr-evolution",
-    "/trend/street-interview-tokyo",
-    "/trend/miniature-diy-crafting",
-  ];
+  const routes = ["", "/explore", "/trending"];
 
-  return routes.map((route) => ({
+  // Add all trend pages
+  const trendRoutes = trends.map((trend) => `/trend/${trend.id}`);
+
+  const allRoutes = [...routes, ...trendRoutes];
+
+  return allRoutes.map((route) => ({
     url: `${BASE_URL}${route}`,
-    lastModified: new Date("2026-05-28"),
+    lastModified: new Date(),
     changeFrequency: route === "" ? "daily" : "weekly",
     priority: route === "" ? 1.0 : 0.8,
   }));

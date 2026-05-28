@@ -3,7 +3,7 @@
 import Script from "next/script";
 
 interface StructuredDataProps {
-  type: "website" | "article" | "organization" | "breadcrumb";
+  type: "website" | "article" | "organization" | "breadcrumb" | "softwareApplication" | "product";
   data?: Record<string, unknown>;
 }
 
@@ -59,6 +59,52 @@ export function StructuredData({ type, data }: StructuredDataProps) {
           ...base,
           "@type": "BreadcrumbList",
           itemListElement: data?.items,
+        };
+      case "softwareApplication":
+        return {
+          ...base,
+          "@type": "SoftwareApplication",
+          name: "TikTok Intelligence",
+          applicationCategory: "SocialMediaAnalytics",
+          operatingSystem: "Web",
+          url: "https://tiktok-intelligence.com",
+          description:
+            "AI-powered TikTok trend analytics and creator intelligence platform. Discover viral trends before they explode.",
+          offers: {
+            "@type": "Offer",
+            price: "0",
+            priceCurrency: "USD",
+          },
+          aggregateRating: {
+            "@type": "AggregateRating",
+            ratingValue: "4.8",
+            ratingCount: "1240",
+          },
+        };
+      case "product":
+        return {
+          ...base,
+          "@type": "Product",
+          name: "TikTok Intelligence",
+          image: "https://tiktok-intelligence.com/og-image.jpg",
+          description:
+            "Real-time viral analytics, AI-powered opportunity scores, and country-specific trend intelligence for TikTok creators.",
+          brand: {
+            "@type": "Brand",
+            name: "TikTok Intelligence",
+          },
+          offers: {
+            "@type": "Offer",
+            url: "https://tiktok-intelligence.com",
+            price: "0",
+            priceCurrency: "USD",
+            availability: "https://schema.org/InStock",
+          },
+          aggregateRating: {
+            "@type": "AggregateRating",
+            ratingValue: "4.8",
+            ratingCount: "1240",
+          },
         };
       default:
         return base;

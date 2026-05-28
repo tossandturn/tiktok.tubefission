@@ -678,9 +678,9 @@ export const uploadSuggestions = [
 ];
 
 export const shortsData = [
-  { id: "s1", thumbnail: "https://images.unsplash.com/photo-1535525153412-5a42439a210d?w=400&h=700&fit=crop", views: "12.4M", likes: "2.1M", duration: "0:24", shortsScore: 94, curiosityGap: "The step that defies physics" },
-  { id: "s2", thumbnail: "https://images.unsplash.com/photo-1617802690992-15d93263d3a9?w=400&h=700&fit=crop", views: "8.7M", likes: "1.4M", duration: "0:31", shortsScore: 91, curiosityGap: "AI voice vs real voice — can you tell?" },
-  { id: "s3", thumbnail: "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=400&h=700&fit=crop", views: "6.2M", likes: "890K", duration: "0:18", shortsScore: 87, curiosityGap: "The smoothest catch you'll see" },
-  { id: "s4", thumbnail: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=700&fit=crop", views: "4.9M", likes: "720K", duration: "0:45", shortsScore: 89, curiosityGap: "Breaking down chocolate into molecules" },
-  { id: "s5", thumbnail: "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=400&h=700&fit=crop", views: "3.8M", likes: "560K", duration: "0:22", shortsScore: 85, curiosityGap: "Reacting without saying anything" },
+  { id: "s1", thumbnail: "https://images.unsplash.com/photo-1535525153412-5a42439a210d?w=400&h=700&fit=crop", views: "12.4M", likes: "2.1M", duration: "0:24", shortsScore: 94, curiosityGap: "The step that defies physics", trendId: "viral-dance-challenge-2026" },
+  { id: "s2", thumbnail: "https://images.unsplash.com/photo-1617802690992-15d93263d3a9?w=400&h=700&fit=crop", views: "8.7M", likes: "1.4M", duration: "0:31", shortsScore: 91, curiosityGap: "AI voice vs real voice — can you tell?", trendId: "ai-voice-filter-hack" },
+  { id: "s3", thumbnail: "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=400&h=700&fit=crop", views: "6.2M", likes: "890K", duration: "0:18", shortsScore: 87, curiosityGap: "The smoothest catch you'll see", trendId: "cinematic-transition-pack" },
+  { id: "s4", thumbnail: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=700&fit=crop", views: "4.9M", likes: "720K", duration: "0:45", shortsScore: 89, curiosityGap: "Breaking down chocolate into molecules", trendId: "food-asmr-evolution" },
+  { id: "s5", thumbnail: "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=400&h=700&fit=crop", views: "3.8M", likes: "560K", duration: "0:22", shortsScore: 85, curiosityGap: "Reacting without saying anything", trendId: "reaction-duet-format" },
 ];

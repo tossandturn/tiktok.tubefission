@@ -52,23 +52,20 @@ export function NavBar() {
           </div>
         </Link>
 
-        {/* Country switcher — fixed in navbar like TubeFission */}
-        <div className="hidden sm:flex items-center gap-1.5">
-          <span className="text-[9px] font-mono text-white/30 uppercase tracking-wider mr-1">
-            Region
-          </span>
+        {/* Country switcher — flag only */}
+        <div className="hidden sm:flex items-center gap-1">
           {countries.map((country) => (
             <button
               key={country.code}
+              title={country.name}
               onClick={() => setSelected(country)}
-              className={`flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium transition-all ${
+              className={`flex items-center justify-center w-7 h-7 rounded-md text-base transition-all ${
                 selected.code === country.code
-                  ? "bg-white/10 text-white"
-                  : "text-white/40 hover:text-white/70 hover:bg-white/5"
+                  ? "bg-white/10 scale-110"
+                  : "opacity-40 hover:opacity-80 hover:bg-white/5"
               }`}
             >
-              <span className="text-sm">{country.flag}</span>
-              <span>{country.code}</span>
+              {country.flag}
             </button>
           ))}
         </div>
@@ -102,27 +99,24 @@ export function NavBar() {
                   {item.label}
                 </Link>
               ))}
-              {/* Mobile country switcher */}
+              {/* Mobile country switcher — flag only */}
               <div className="pt-2 border-t border-white/5 mt-2">
-                <span className="text-[9px] font-mono text-white/30 uppercase tracking-wider px-3">
-                  Region
-                </span>
-                <div className="flex flex-wrap gap-1 mt-1 px-3">
+                <div className="flex flex-wrap gap-2 px-3">
                   {countries.map((country) => (
                     <button
                       key={country.code}
+                      title={country.name}
                       onClick={() => {
                         setSelected(country);
                         setMobileOpen(false);
                       }}
-                      className={`flex items-center gap-1 px-2 py-1.5 rounded-md text-xs font-medium transition-all ${
+                      className={`flex items-center justify-center w-8 h-8 rounded-lg text-lg transition-all ${
                         selected.code === country.code
-                          ? "bg-white/10 text-white"
-                          : "text-white/40 hover:text-white/70 hover:bg-white/5"
+                          ? "bg-white/10 scale-110"
+                          : "opacity-40 hover:opacity-80 hover:bg-white/5"
                       }`}
                     >
-                      <span>{country.flag}</span>
-                      <span>{country.code}</span>
+                      {country.flag}
                     </button>
                   ))}
                 </div>

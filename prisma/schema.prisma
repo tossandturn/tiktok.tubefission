@@ -8,36 +8,44 @@ datasource db {
 }
 
 model Trend {
-  id               String   @id @default(cuid())
-  slug             String   @unique
-  title            String
-  description      String
-  category         String
-  country          String   @default("US")
-  growthRate       Float    @default(0)
-  views            String   @default("0")
-  creators         Int      @default(0)
-  thumbnail        String?
-  isViral          Boolean  @default(false)
-  isNew            Boolean  @default(false)
-  velocity         Float    @default(0)
-  saturation       Float    @default(0)
-  creatorFit       Float    @default(0)
-  engagement       Float    @default(0)
-  avgViews         String   @default("0")
-  competition      String   @default("LOW")
-  viralScore       Float    @default(0)
-  opportunityScore Float    @default(0)
-  whyItBlowsUp     String?
-  peakExpected     String?
-  urgency          String   @default("MEDIUM")
-  actionTime       String?
-  suggestedTitle   String?
-  creatorsUploaded Int      @default(0)
-  aiPrediction     String?
-  aiScore          Float?
-  publishedAt      DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id                   String   @id @default(cuid())
+  slug                 String   @unique
+  title                String
+  description          String
+  category             String
+  country              String   @default("US")
+  growthRate           Float    @default(0)
+  views                String   @default("0")
+  creators             Int      @default(0)
+  thumbnail            String?
+  isViral              Boolean  @default(false)
+  isNew                Boolean  @default(false)
+  velocity             Float    @default(0)
+  saturation           Float    @default(0)
+  creatorFit           Float    @default(0)
+  engagement           Float    @default(0)
+  avgViews             String   @default("0")
+  competition          String   @default("LOW")
+  viralScore           Float    @default(0)
+  opportunityScore     Float    @default(0)
+  whyItBlowsUp        String?
+  peakExpected         String?
+  urgency              String   @default("MEDIUM")
+  actionTime           String?
+  suggestedTitle       String?
+  creatorsUploaded     Int      @default(0)
+  aiPrediction         String?
+  aiScore              Float?
+  // AI Prediction Fields
+  predictedEngagement Int?
+  momentumScore        Float?
+  trendForecast7d      Float?
+  trendForecast30d     Float?
+  viralProbability     Float?   @default(0)
+  peakTime             DateTime?
+  // Metadata
+  publishedAt          DateTime @default(now())
+  updatedAt            DateTime @updatedAt
 
   tags          TrendTag[]
   videos        Video[]
@@ -50,6 +58,8 @@ model Trend {
   @@index([publishedAt])
   @@index([aiScore])
   @@index([viralScore])
+  @@index([momentumScore])
+  @@index([velocity])
 }
 
 model Tag {
@@ -82,6 +92,10 @@ model Video {
   viralScore   Float    @default(0)
   shortsScore  Float    @default(0)
   curiosityGap String?
+  // AI Analysis
+  engagementRate Float?
+  retentionRate  Float?
+  watchTime      Float?
   publishedAt  DateTime @default(now())
   scrapedAt    DateTime @default(now())
 
@@ -93,20 +107,34 @@ model Video {
 }
 
 model Creator {
-  id          String   @id @default(cuid())
-  tiktokId    String?  @unique
-  username    String   @unique
-  displayName String
-  avatar      String?
-  followers   Int      @default(0)
-  following   Int      @default(0)
-  likes       Int      @default(0)
-  niche       String?
-  bio         String?
-  isVerified  Boolean  @default(false)
-  updatedAt   DateTime @updatedAt
+  id                   String   @id @default(cuid())
+  tiktokId            String?  @unique
+  username            String   @unique
+  displayName         String
+  avatar              String?
+  followers           Int      @default(0)
+  following           Int      @default(0)
+  likes               Int      @default(0)
+  niche               String?
+  bio                 String?
+  isVerified          Boolean  @default(false)
+  // AI Metrics
+  momentumScore       Float    @default(0)
+  engagementRate      Float    @default(0)
+  avgViews            Int      @default(0)
+  viralVideoRate      Float    @default(0)
+  audienceOverlap     Json?
+  predictedGrowth7d   Float?
+  predictedGrowth30d  Float?
+  lastAnalyzed        DateTime?
+  updatedAt           DateTime @updatedAt
 
   trends TrendCreator[]
+  videos CreatorVideo[]
+
+  @@index([momentumScore])
+  @@index([followers])
+  @@index([niche])
 }
 
 model TrendCreator {
@@ -120,6 +148,16 @@ model TrendCreator {
   @@id([trendId, creatorId])
 }
 
+model CreatorVideo {
+  id        String   @id @default(cuid())
+  creatorId String
+  videoId   String
+
+  creator Creator @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+
+  @@index([creatorId])
+}
+
 model Hashtag {
   id          String   @id @default(cuid())
   name        String   @unique
@@ -128,10 +166,17 @@ model Hashtag {
   growthRate  Float    @default(0)
   category    String?
   isRising    Boolean  @default(false)
+  // AI Analysis
+  velocity    Float    @default(0)
+  engagementRate Float?
+  avgViews    Int?
+  viralScore  Float?
+  relatedHashtags Json?
   scrapedAt   DateTime @default(now())
 
   @@index([isRising])
   @@index([growthRate])
+  @@index([velocity])
 }
 
 model Sound {
@@ -143,10 +188,36 @@ model Sound {
   uses        Int      @default(0)
   growthRate  Float    @default(0)
   isViral     Boolean  @default(false)
+  // AI Analysis
+  velocity    Float?
+  viralScore  Float?
+  trendingSince DateTime?
   scrapedAt   DateTime @default(now())
 
   @@index([isViral])
   @@index([uses])
+  @@index([viralScore])
+}
+
+model TrendAnalysis {
+  id                   String   @id @default(cuid())
+  trendId              String?
+  hashtagId            String?
+  soundId              String?
+  trendScore           Float    @default(0)
+  velocity             Float    @default(0)
+  predictedEngagement  Int?
+  forecast7d           Float?
+  forecast30d          Float?
+  momentumDirection    String?  // "accelerating", "stable", "declining"
+  riskLevel            String?  // "low", "medium", "high"
+  opportunityWindow    String?
+  competitorSaturation Float?
+  lastUpdated          DateTime @updatedAt
+
+  @@index([trendScore])
+  @@index([velocity])
+  @@index([lastUpdated])
 }
 
 model ScrapeLog {
@@ -158,4 +229,38 @@ model ScrapeLog {
   metadata  Json?
   startedAt DateTime @default(now())
   endedAt   DateTime?
+}
+
+model UserAlert {
+  id          String   @id @default(cuid())
+  userId      String
+  trendId     String?
+  hashtagId   String?
+  creatorId   String?
+  alertType   String   // "viral_spike", "new_trend", "momentum_change"
+  threshold   Float?
+  isActive    Boolean  @default(true)
+  frequency   String   @default("daily") // "daily", "weekly", "realtime"
+  lastSent    DateTime?
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([alertType])
+  @@index([isActive])
+}
+
+model Report {
+  id          String   @id @default(cuid())
+  userId      String
+  title       String
+  type        String   // "viral", "trend", "creator", "competitor"
+  data        Json
+  isShareable Boolean  @default(true)
+  shareToken  String?  @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([shareToken])
+  @@index([type])
 }

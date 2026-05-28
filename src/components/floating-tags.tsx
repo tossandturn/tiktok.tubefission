@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
+import { useRouter } from "next/navigation";
 
 interface FloatingTagsProps {
   tags: string[];
@@ -9,6 +10,12 @@ interface FloatingTagsProps {
 }
 
 export function FloatingTags({ tags, className }: FloatingTagsProps) {
+  const router = useRouter();
+
+  const handleClick = (tag: string) => {
+    router.push(`/explore?category=${encodeURIComponent(tag)}`);
+  };
+
   return (
     <div className={`flex flex-wrap gap-2 ${className}`}>
       {tags.map((tag, i) => (
@@ -25,6 +32,7 @@ export function FloatingTags({ tags, className }: FloatingTagsProps) {
         >
           <Badge
             variant="secondary"
+            onClick={() => handleClick(tag)}
             className="bg-white/10 hover:bg-white/15 text-white/90 backdrop-blur-md border-0 px-3 py-1 text-xs font-medium rounded-full transition-colors cursor-pointer"
           >
             {tag}

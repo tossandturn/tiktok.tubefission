@@ -107,6 +107,8 @@ export default function RootLayout({
       <head>
         <StructuredData type="website" />
         <StructuredData type="organization" />
+        <StructuredData type="softwareApplication" />
+        <StructuredData type="product" />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-black text-white min-h-screen`}
