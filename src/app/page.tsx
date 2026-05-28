@@ -1,101 +1,114 @@
+import { HeroSection } from "@/components/hero-section";
+import { TrendCard } from "@/components/trend-card";
+import { VideoSection } from "@/components/video-section";
+import { AdSlot } from "@/components/ad-slot";
+import { FloatingTags } from "@/components/floating-tags";
+import { trends, featuredCreators } from "@/lib/data";
+import { Flame, Clock, TrendingUp, Users } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 
-export default function Home() {
+const sectionVideos = [
+  { id: "v1", thumbnail: "https://images.unsplash.com/photo-1535525153412-5a42439a210d?w=400&h=700&fit=crop", views: "12.4M", likes: "2.1M", duration: "0:24" },
+  { id: "v2", thumbnail: "https://images.unsplash.com/photo-1617802690992-15d93263d3a9?w=400&h=700&fit=crop", views: "8.7M", likes: "1.4M", duration: "0:31" },
+  { id: "v3", thumbnail: "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=400&h=700&fit=crop", views: "6.2M", likes: "890K", duration: "0:18" },
+  { id: "v4", thumbnail: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=400&h=700&fit=crop", views: "4.9M", likes: "720K", duration: "0:45" },
+  { id: "v5", thumbnail: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=700&fit=crop", views: "3.8M", likes: "560K", duration: "0:22" },
+];
+
+export default function HomePage() {
+  const viralTrends = trends.filter((t) => t.isViral);
+  const newTrends = trends.filter((t) => t.isNew);
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <div className="max-w-lg mx-auto">
+      <HeroSection />
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      <AdSlot position="below-hero" />
+
+      {/* Featured Creators */}
+      <section className="px-4 py-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-bold text-white flex items-center gap-2">
+            <Users className="w-5 h-5 text-tiktok-cyan" />
+            Rising Creators
+          </h2>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory">
+          {featuredCreators.map((creator) => (
+            <div
+              key={creator.id}
+              className="flex-shrink-0 flex flex-col items-center gap-2 snap-start"
+            >
+              <div className="relative w-16 h-16 rounded-full overflow-hidden ring-2 ring-tiktok-cyan/30 ring-offset-2 ring-offset-tiktok-black">
+                <Image src={creator.avatar} alt={creator.name} fill className="object-cover" sizes="64px" />
+              </div>
+              <span className="text-xs font-semibold text-white">{creator.name}</span>
+              <span className="text-[10px] text-white/40">{creator.followers}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Viral Trends */}
+      <section className="px-4 py-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-bold text-white flex items-center gap-2">
+            <Flame className="w-5 h-5 text-tiktok-red" />
+            Going Viral Now
+          </h2>
+          <Link href="/explore" className="text-xs text-tiktok-cyan hover:underline">
+            See all
+          </Link>
+        </div>
+        <div className="space-y-4">
+          {viralTrends.map((trend, i) => (
+            <TrendCard key={trend.id} trend={trend} index={i} />
+          ))}
+        </div>
+      </section>
+
+      <VideoSection title="Trending Videos" videos={sectionVideos.slice(0, 4)} />
+
+      <AdSlot position="between-sections" />
+
+      {/* New Signals */}
+      <section className="px-4 py-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-bold text-white flex items-center gap-2">
+            <Clock className="w-5 h-5 text-tiktok-cyan" />
+            Fresh Signals
+          </h2>
+        </div>
+        <div className="space-y-4">
+          {newTrends.map((trend, i) => (
+            <TrendCard key={trend.id} trend={trend} index={i} />
+          ))}
+        </div>
+      </section>
+
+      <VideoSection title="Early Adopters" videos={sectionVideos.slice(1, 5)} />
+
+      {/* Category tags */}
+      <section className="px-4 py-8">
+        <h2 className="text-lg font-bold text-white mb-4">Explore by Category</h2>
+        <FloatingTags
+          tags={["Dance", "Tech", "Editing", "Lifestyle", "Food", "Social", "DIY", "Entertainment"]}
+        />
+      </section>
+
+      {/* All trends */}
+      <section className="px-4 py-6 pb-12">
+        <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+          <TrendingUp className="w-5 h-5 text-white/60" />
+          All Signals
+        </h2>
+        <div className="space-y-4">
+          {trends.map((trend, i) => (
+            <TrendCard key={trend.id} trend={trend} index={i} layout="horizontal" />
+          ))}
+        </div>
+      </section>
     </div>
   );
 }

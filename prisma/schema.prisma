@@ -1,0 +1,143 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Trend {
+  id            String   @id @default(cuid())
+  slug          String   @unique
+  title         String
+  description   String
+  category      String
+  growthRate    Float    @default(0)
+  views         String   @default("0")
+  creators      Int      @default(0)
+  thumbnail     String?
+  isViral       Boolean  @default(false)
+  isNew         Boolean  @default(false)
+  velocity      Float    @default(0) // 0-100 speed score
+  saturation    Float    @default(0) // 0-100 how crowded
+  creatorFit    Float    @default(0) // 0-100 accessibility score
+  aiPrediction  String?  // AI-generated forecast
+  aiScore       Float?   // 0-100 opportunity score
+  publishedAt   DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tags          TrendTag[]
+  videos        Video[]
+  trendCreators TrendCreator[]
+
+  @@index([category])
+  @@index([isViral])
+  @@index([isNew])
+  @@index([publishedAt])
+  @@index([aiScore])
+}
+
+model Tag {
+  id     String     @id @default(cuid())
+  name   String     @unique
+  trends TrendTag[]
+}
+
+model TrendTag {
+  trendId String
+  tagId   String
+
+  trend Trend @relation(fields: [trendId], references: [id], onDelete: Cascade)
+  tag   Tag   @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([trendId, tagId])
+}
+
+model Video {
+  id          String   @id @default(cuid())
+  trendId     String
+  tiktokId    String?  @unique
+  url         String?
+  thumbnail   String?
+  views       String   @default("0")
+  likes       String   @default("0")
+  shares      String   @default("0")
+  comments    String   @default("0")
+  duration    String?
+  publishedAt DateTime @default(now())
+  scrapedAt   DateTime @default(now())
+
+  trend Trend @relation(fields: [trendId], references: [id], onDelete: Cascade)
+
+  @@index([trendId])
+  @@index([scrapedAt])
+}
+
+model Creator {
+  id          String   @id @default(cuid())
+  tiktokId    String?  @unique
+  username    String   @unique
+  displayName String
+  avatar      String?
+  followers   Int      @default(0)
+  following   Int      @default(0)
+  likes       Int      @default(0)
+  niche       String?
+  bio         String?
+  isVerified  Boolean  @default(false)
+  updatedAt   DateTime @updatedAt
+
+  trends TrendCreator[]
+}
+
+model TrendCreator {
+  trendId   String
+  creatorId String
+  role      String   @default("early") // early, viral, pioneer
+
+  trend   Trend   @relation(fields: [trendId], references: [id], onDelete: Cascade)
+  creator Creator @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+
+  @@id([trendId, creatorId])
+}
+
+model Hashtag {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  views       String   @default("0")
+  videos      Int      @default(0)
+  growthRate  Float    @default(0)
+  category    String?
+  isRising    Boolean  @default(false)
+  scrapedAt   DateTime @default(now())
+
+  @@index([isRising])
+  @@index([growthRate])
+}
+
+model Sound {
+  id          String   @id @default(cuid())
+  tiktokId    String?  @unique
+  title       String
+  author      String?
+  thumbnail   String?
+  uses        Int      @default(0)
+  growthRate  Float    @default(0)
+  isViral     Boolean  @default(false)
+  scrapedAt   DateTime @default(now())
+
+  @@index([isViral])
+  @@index([uses])
+}
+
+model ScrapeLog {
+  id        String   @id @default(cuid())
+  type      String   // hashtag, video, creator, sound, discover
+  status    String   // success, error, partial
+  count     Int      @default(0)
+  error     String?
+  metadata  Json?    // extra context
+  startedAt DateTime @default(now())
+  endedAt   DateTime?
+}
