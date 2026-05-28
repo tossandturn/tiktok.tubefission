@@ -1,0 +1,50 @@
+-- AlterTable
+ALTER TABLE "Trend" ADD COLUMN IF NOT EXISTS "country" TEXT NOT NULL DEFAULT 'US';
+
+-- AlterTable
+ALTER TABLE "Trend" ADD COLUMN IF NOT EXISTS "engagement" DOUBLE PRECISION NOT NULL DEFAULT 0;
+
+-- AlterTable
+ALTER TABLE "Trend" ADD COLUMN IF NOT EXISTS "avgViews" TEXT NOT NULL DEFAULT '0';
+
+-- AlterTable
+ALTER TABLE "Trend" ADD COLUMN IF NOT EXISTS "competition" TEXT NOT NULL DEFAULT 'LOW';
+
+-- AlterTable
+ALTER TABLE "Trend" ADD COLUMN IF NOT EXISTS "viralScore" DOUBLE PRECISION NOT NULL DEFAULT 0;
+
+-- AlterTable
+ALTER TABLE "Trend" ADD COLUMN IF NOT EXISTS "opportunityScore" DOUBLE PRECISION NOT NULL DEFAULT 0;
+
+-- AlterTable
+ALTER TABLE "Trend" ADD COLUMN IF NOT EXISTS "whyItBlowsUp" TEXT;
+
+-- AlterTable
+ALTER TABLE "Trend" ADD COLUMN IF NOT EXISTS "peakExpected" TEXT;
+
+-- AlterTable
+ALTER TABLE "Trend" ADD COLUMN IF NOT EXISTS "urgency" TEXT NOT NULL DEFAULT 'MEDIUM';
+
+-- AlterTable
+ALTER TABLE "Trend" ADD COLUMN IF NOT EXISTS "actionTime" TEXT;
+
+-- AlterTable
+ALTER TABLE "Trend" ADD COLUMN IF NOT EXISTS "suggestedTitle" TEXT;
+
+-- AlterTable
+ALTER TABLE "Trend" ADD COLUMN IF NOT EXISTS "creatorsUploaded" INTEGER NOT NULL DEFAULT 0;
+
+-- AlterTable
+ALTER TABLE "Video" ADD COLUMN IF NOT EXISTS "viralScore" DOUBLE PRECISION NOT NULL DEFAULT 0;
+
+-- AlterTable
+ALTER TABLE "Video" ADD COLUMN IF NOT EXISTS "shortsScore" DOUBLE PRECISION NOT NULL DEFAULT 0;
+
+-- AlterTable
+ALTER TABLE "Video" ADD COLUMN IF NOT EXISTS "curiosityGap" TEXT;
+
+-- CreateIndex
+CREATE INDEX IF NOT EXISTS "Trend_country_idx" ON "Trend"("country");
+
+-- CreateIndex
+CREATE INDEX IF NOT EXISTS "Trend_viralScore_idx" ON "Trend"("viralScore");
