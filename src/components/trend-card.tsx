@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
-import { TrendingUp, Eye, Users, ArrowUpRight, Flame, Sparkles } from "lucide-react";
+import { TrendingUp, Eye, Users, ArrowUpRight, Flame, Sparkles, BarChart3, Globe } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { FloatingTags } from "./floating-tags";
 import type { Trend } from "@/lib/data";
@@ -63,6 +63,14 @@ export function TrendCard({ trend, index, layout = "vertical" }: TrendCardProps)
               </div>
             )}
 
+            {/* Country badge */}
+            {trend.country && isVertical && (
+              <div className="absolute top-3 right-3 flex items-center gap-1 bg-black/50 backdrop-blur-sm text-white text-[10px] font-medium px-2 py-1 rounded-full">
+                <Globe className="w-2.5 h-2.5" />
+                {trend.country}
+              </div>
+            )}
+
             {/* Growth badge on image */}
             {isVertical && (
               <div className="absolute bottom-3 left-3 flex items-center gap-1 bg-black/50 backdrop-blur-sm text-tiktok-cyan text-xs font-bold px-2 py-1 rounded-full">
@@ -97,6 +105,26 @@ export function TrendCard({ trend, index, layout = "vertical" }: TrendCardProps)
             <p className={`text-sm text-white/40 leading-relaxed ${isVertical ? "line-clamp-2" : "line-clamp-1"}`}>
               {trend.description}
             </p>
+
+            {/* Analytics mini bar */}
+            {(trend.viralScore || trend.opportunityScore) && isVertical && (
+              <div className="flex items-center gap-2">
+                {trend.viralScore !== undefined && (
+                  <div className="flex items-center gap-1 text-[10px]">
+                    <BarChart3 className="w-3 h-3 text-tiktok-cyan" />
+                    <span className="text-white/40">Viral</span>
+                    <span className="font-bold text-white">{trend.viralScore}</span>
+                  </div>
+                )}
+                {trend.opportunityScore !== undefined && (
+                  <div className="flex items-center gap-1 text-[10px]">
+                    <TrendingUp className="w-3 h-3 text-green-400" />
+                    <span className="text-white/40">Opp</span>
+                    <span className="font-bold text-white">{trend.opportunityScore}</span>
+                  </div>
+                )}
+              </div>
+            )}
 
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3 text-xs text-white/30">

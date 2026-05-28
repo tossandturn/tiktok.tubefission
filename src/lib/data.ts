@@ -11,6 +11,24 @@ export interface Trend {
   publishedAt: string;
   isViral: boolean;
   isNew: boolean;
+  // Analytics fields
+  country?: string;
+  engagement?: number;
+  avgViews?: string;
+  competition?: string;
+  viralScore?: number;
+  opportunityScore?: number;
+  whyItBlowsUp?: string;
+  peakExpected?: string;
+  urgency?: string;
+  actionTime?: string;
+  suggestedTitle?: string;
+  creatorsUploaded?: number;
+  aiScore?: number;
+  aiPrediction?: string;
+  velocity?: number;
+  saturation?: number;
+  creatorFit?: number;
 }
 
 export interface Creator {
@@ -35,6 +53,23 @@ export const trends: Trend[] = [
     publishedAt: "2026-05-26",
     isViral: true,
     isNew: true,
+    country: "US",
+    engagement: 89,
+    avgViews: "3.8M",
+    competition: "LOW",
+    viralScore: 92,
+    opportunityScore: 88,
+    whyItBlowsUp: "Visual illusion format is inherently shareable. Low production barrier means rapid creator adoption.",
+    peakExpected: "48-72 hours",
+    urgency: "HIGH",
+    actionTime: "Upload within 24h for maximum reach",
+    suggestedTitle: "I tried the Phantom Step and it actually works",
+    creatorsUploaded: 12500,
+    aiScore: 88,
+    aiPrediction: "Will peak in 48-72 hours, then rapidly saturate. Dance niche should adopt immediately.",
+    velocity: 92,
+    saturation: 22,
+    creatorFit: 78,
   },
   {
     id: "ai-voice-filter-hack",
@@ -49,6 +84,23 @@ export const trends: Trend[] = [
     publishedAt: "2026-05-25",
     isViral: true,
     isNew: true,
+    country: "US",
+    engagement: 94,
+    avgViews: "11M",
+    competition: "MEDIUM",
+    viralScore: 96,
+    opportunityScore: 94,
+    whyItBlowsUp: "Novelty of AI voice cloning creates immediate curiosity. Celebrity impressions drive comment engagement.",
+    peakExpected: "5-7 days",
+    urgency: "MEDIUM",
+    actionTime: "5-7 day window before barrier to entry rises",
+    suggestedTitle: "AI cloned my voice and I can't tell the difference",
+    creatorsUploaded: 8400,
+    aiScore: 94,
+    aiPrediction: "High barrier to entry limits saturation. Tech and comedy niches have 5-7 day window.",
+    velocity: 96,
+    saturation: 15,
+    creatorFit: 65,
   },
   {
     id: "cinematic-transition-pack",
@@ -63,6 +115,23 @@ export const trends: Trend[] = [
     publishedAt: "2026-05-24",
     isViral: false,
     isNew: true,
+    country: "US",
+    engagement: 76,
+    avgViews: "4.6M",
+    competition: "MEDIUM",
+    viralScore: 74,
+    opportunityScore: 76,
+    whyItBlowsUp: "Satisfying visual payoff rewards full watch time. Editing skill barrier limits copycats.",
+    peakExpected: "2 weeks",
+    urgency: "LOW",
+    actionTime: "Steady growth for 2 weeks",
+    suggestedTitle: "The smoothest transition you'll see today",
+    creatorsUploaded: 6700,
+    aiScore: 76,
+    aiPrediction: "Steady growth for 2 weeks. Editing-heavy format favors established creators.",
+    velocity: 74,
+    saturation: 35,
+    creatorFit: 82,
   },
   {
     id: "productivity-hack-morning",
@@ -77,6 +146,23 @@ export const trends: Trend[] = [
     publishedAt: "2026-05-23",
     isViral: false,
     isNew: false,
+    country: "US",
+    engagement: 62,
+    avgViews: "6.6M",
+    competition: "HIGH",
+    viralScore: 58,
+    opportunityScore: 62,
+    whyItBlowsUp: "Aspirational content drives saves and shares. High production value creates sub-niche barriers.",
+    peakExpected: "Saturated",
+    urgency: "LOW",
+    actionTime: "Differentiate through unique angle or location",
+    suggestedTitle: "My realistic 5AM routine (no sugar coating)",
+    creatorsUploaded: 4100,
+    aiScore: 62,
+    aiPrediction: "Saturated but stable. Differentiation through unique location or profession is key.",
+    velocity: 58,
+    saturation: 68,
+    creatorFit: 90,
   },
   {
     id: "food-asmr-evolution",
@@ -91,6 +177,23 @@ export const trends: Trend[] = [
     publishedAt: "2026-05-22",
     isViral: true,
     isNew: false,
+    country: "JP",
+    engagement: 84,
+    avgViews: "17.5M",
+    competition: "LOW",
+    viralScore: 85,
+    opportunityScore: 84,
+    whyItBlowsUp: "Cross-cultural appeal. ASMR satisfies algorithmic watch time requirements. Low creator count = blue ocean.",
+    peakExpected: "10 days",
+    urgency: "HIGH",
+    actionTime: "10-day first-mover advantage for Western creators",
+    suggestedTitle: "Deconstructing a strawberry into molecules",
+    creatorsUploaded: 3200,
+    aiScore: 84,
+    aiPrediction: "Crossing into Western markets now. Food and science creators have 10-day first-mover advantage.",
+    velocity: 85,
+    saturation: 18,
+    creatorFit: 55,
   },
   {
     id: "street-interview-tokyo",
@@ -105,6 +208,23 @@ export const trends: Trend[] = [
     publishedAt: "2026-05-21",
     isViral: false,
     isNew: false,
+    country: "JP",
+    engagement: 72,
+    avgViews: "21.3M",
+    competition: "LOW",
+    viralScore: 68,
+    opportunityScore: 72,
+    whyItBlowsUp: "Authentic unscripted content outperforms polished videos. Location-based novelty drives shares.",
+    peakExpected: "3 weeks",
+    urgency: "MEDIUM",
+    actionTime: "Replicable in any major city",
+    suggestedTitle: "I asked strangers in Tokyo about happiness",
+    creatorsUploaded: 890,
+    aiScore: 72,
+    aiPrediction: "Niche but loyal audience. Geographic replication potential is high.",
+    velocity: 62,
+    saturation: 12,
+    creatorFit: 70,
   },
   {
     id: "miniature-diy-crafting",
@@ -119,6 +239,23 @@ export const trends: Trend[] = [
     publishedAt: "2026-05-20",
     isViral: false,
     isNew: true,
+    country: "US",
+    engagement: 78,
+    avgViews: "5.9M",
+    competition: "MEDIUM",
+    viralScore: 72,
+    opportunityScore: 78,
+    whyItBlowsUp: "Extremely high session duration signals algorithm boost. Satisfying process drives replays.",
+    peakExpected: "2 weeks",
+    urgency: "MEDIUM",
+    actionTime: "Start building now — process takes time",
+    suggestedTitle: "I built a tiny kitchen that actually works",
+    creatorsUploaded: 5600,
+    aiScore: 78,
+    aiPrediction: "Steady growth with high retention. Long-form potential on YouTube Shorts.",
+    velocity: 70,
+    saturation: 28,
+    creatorFit: 60,
   },
   {
     id: "reaction-duet-format",
@@ -133,6 +270,23 @@ export const trends: Trend[] = [
     publishedAt: "2026-05-19",
     isViral: false,
     isNew: false,
+    country: "US",
+    engagement: 81,
+    avgViews: "4.2M",
+    competition: "HIGH",
+    viralScore: 76,
+    opportunityScore: 81,
+    whyItBlowsUp: "Silence creates curiosity gap. No language barrier = global reach. Easy to produce.",
+    peakExpected: "1 week",
+    urgency: "HIGH",
+    actionTime: "Jump on now before saturation peaks",
+    suggestedTitle: "Reacting without saying a single word",
+    creatorsUploaded: 9800,
+    aiScore: 81,
+    aiPrediction: "High saturation risk but universal format. Comedy and reaction channels should adopt immediately.",
+    velocity: 82,
+    saturation: 55,
+    creatorFit: 85,
   },
 ];
 
@@ -153,4 +307,54 @@ export const featuredCreators: Creator[] = [
   { id: "2", name: "Alex Rivera", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop", followers: "2.8M", niche: "Tech" },
   { id: "3", name: "Yuki Tanaka", avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop", followers: "6.1M", niche: "Lifestyle" },
   { id: "4", name: "Jordan Smith", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop", followers: "1.9M", niche: "Food" },
+];
+
+export const trendingTagBubbles = [
+  { name: "PhantomStep", count: 12500, growth: 340 },
+  { name: "AIVoice", count: 8400, growth: 520 },
+  { name: "5AMRoutine", count: 4100, growth: 180 },
+  { name: "FoodASMR", count: 3200, growth: 290 },
+  { name: "Transitions", count: 6700, growth: 210 },
+  { name: "StreetInterview", count: 890, growth: 155 },
+  { name: "Miniature", count: 5600, growth: 195 },
+  { name: "SilentDuet", count: 9800, growth: 220 },
+  { name: "Deconstructed", count: 2800, growth: 310 },
+  { name: "VoiceClone", count: 6200, growth: 480 },
+  { name: "Cinematic", count: 4500, growth: 190 },
+  { name: "Productivity", count: 3200, growth: 165 },
+];
+
+export const uploadSuggestions = [
+  {
+    id: "us1",
+    title: "React to the Phantom Step with your own twist",
+    hook: "Start with: 'I've seen 100 people try this. Here's what they're all doing wrong.' Then demonstrate the common mistake vs your improved version.",
+    tags: ["PhantomStep", "DanceTutorial", "Viral"],
+    bestTime: "Today 6-8PM EST",
+    estimatedReach: "500K-1.2M",
+  },
+  {
+    id: "us2",
+    title: "Test the AI Voice Clone on your pet",
+    hook: "Record your dog barking, then use AI to make it 'speak' a full sentence. The absurdity drives shares.",
+    tags: ["AIVoice", "PetTok", "Comedy"],
+    bestTime: "Tomorrow 12-2PM EST",
+    estimatedReach: "300K-800K",
+  },
+  {
+    id: "us3",
+    title: "Deconstruct a common food in your culture",
+    hook: "Take something everyone knows (like a burger or sushi) and break it down into surprising components. Use macro lens for satisfying visuals.",
+    tags: ["FoodASMR", "Deconstructed", "Satisfying"],
+    bestTime: "This weekend",
+    estimatedReach: "800K-2M",
+  },
+];
+
+export const shortsData = [
+  { id: "s1", thumbnail: "https://images.unsplash.com/photo-1535525153412-5a42439a210d?w=400&h=700&fit=crop", views: "12.4M", likes: "2.1M", duration: "0:24", shortsScore: 94, curiosityGap: "The step that defies physics" },
+  { id: "s2", thumbnail: "https://images.unsplash.com/photo-1617802690992-15d93263d3a9?w=400&h=700&fit=crop", views: "8.7M", likes: "1.4M", duration: "0:31", shortsScore: 91, curiosityGap: "AI voice vs real voice — can you tell?" },
+  { id: "s3", thumbnail: "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=400&h=700&fit=crop", views: "6.2M", likes: "890K", duration: "0:18", shortsScore: 87, curiosityGap: "The smoothest catch you'll see" },
+  { id: "s4", thumbnail: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=700&fit=crop", views: "4.9M", likes: "720K", duration: "0:45", shortsScore: 89, curiosityGap: "Breaking down chocolate into molecules" },
+  { id: "s5", thumbnail: "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=400&h=700&fit=crop", views: "3.8M", likes: "560K", duration: "0:22", shortsScore: 85, curiosityGap: "Reacting without saying anything" },
 ];

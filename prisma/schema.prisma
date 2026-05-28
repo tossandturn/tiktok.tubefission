@@ -8,34 +8,48 @@ datasource db {
 }
 
 model Trend {
-  id            String   @id @default(cuid())
-  slug          String   @unique
-  title         String
-  description   String
-  category      String
-  growthRate    Float    @default(0)
-  views         String   @default("0")
-  creators      Int      @default(0)
-  thumbnail     String?
-  isViral       Boolean  @default(false)
-  isNew         Boolean  @default(false)
-  velocity      Float    @default(0) // 0-100 speed score
-  saturation    Float    @default(0) // 0-100 how crowded
-  creatorFit    Float    @default(0) // 0-100 accessibility score
-  aiPrediction  String?  // AI-generated forecast
-  aiScore       Float?   // 0-100 opportunity score
-  publishedAt   DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id               String   @id @default(cuid())
+  slug             String   @unique
+  title            String
+  description      String
+  category         String
+  country          String   @default("US")
+  growthRate       Float    @default(0)
+  views            String   @default("0")
+  creators         Int      @default(0)
+  thumbnail        String?
+  isViral          Boolean  @default(false)
+  isNew            Boolean  @default(false)
+  velocity         Float    @default(0)
+  saturation       Float    @default(0)
+  creatorFit       Float    @default(0)
+  engagement       Float    @default(0)
+  avgViews         String   @default("0")
+  competition      String   @default("LOW")
+  viralScore       Float    @default(0)
+  opportunityScore Float    @default(0)
+  whyItBlowsUp     String?
+  peakExpected     String?
+  urgency          String   @default("MEDIUM")
+  actionTime       String?
+  suggestedTitle   String?
+  creatorsUploaded Int      @default(0)
+  aiPrediction     String?
+  aiScore          Float?
+  publishedAt      DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
   tags          TrendTag[]
   videos        Video[]
   trendCreators TrendCreator[]
 
   @@index([category])
+  @@index([country])
   @@index([isViral])
   @@index([isNew])
   @@index([publishedAt])
   @@index([aiScore])
+  @@index([viralScore])
 }
 
 model Tag {
@@ -55,23 +69,27 @@ model TrendTag {
 }
 
 model Video {
-  id          String   @id @default(cuid())
-  trendId     String
-  tiktokId    String?  @unique
-  url         String?
-  thumbnail   String?
-  views       String   @default("0")
-  likes       String   @default("0")
-  shares      String   @default("0")
-  comments    String   @default("0")
-  duration    String?
-  publishedAt DateTime @default(now())
-  scrapedAt   DateTime @default(now())
+  id           String   @id @default(cuid())
+  trendId      String
+  tiktokId     String?  @unique
+  url          String?
+  thumbnail    String?
+  views        String   @default("0")
+  likes        String   @default("0")
+  shares       String   @default("0")
+  comments     String   @default("0")
+  duration     String?
+  viralScore   Float    @default(0)
+  shortsScore  Float    @default(0)
+  curiosityGap String?
+  publishedAt  DateTime @default(now())
+  scrapedAt    DateTime @default(now())
 
   trend Trend @relation(fields: [trendId], references: [id], onDelete: Cascade)
 
   @@index([trendId])
   @@index([scrapedAt])
+  @@index([viralScore])
 }
 
 model Creator {
@@ -94,7 +112,7 @@ model Creator {
 model TrendCreator {
   trendId   String
   creatorId String
-  role      String   @default("early") // early, viral, pioneer
+  role      String   @default("early")
 
   trend   Trend   @relation(fields: [trendId], references: [id], onDelete: Cascade)
   creator Creator @relation(fields: [creatorId], references: [id], onDelete: Cascade)
@@ -133,11 +151,11 @@ model Sound {
 
 model ScrapeLog {
   id        String   @id @default(cuid())
-  type      String   // hashtag, video, creator, sound, discover
-  status    String   // success, error, partial
+  type      String
+  status    String
   count     Int      @default(0)
   error     String?
-  metadata  Json?    // extra context
+  metadata  Json?
   startedAt DateTime @default(now())
   endedAt   DateTime?
 }

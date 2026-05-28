@@ -2,12 +2,14 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, TrendingUp, Eye, Users, Clock, Share2, Bookmark, Flame, Sparkles } from "lucide-react";
+import { ArrowLeft, TrendingUp, Eye, Users, Clock, Share2, Bookmark, Flame, Sparkles, BarChart3, Target, Zap, Globe } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AdSlot } from "@/components/ad-slot";
 import { FloatingTags } from "@/components/floating-tags";
 import { StructuredData } from "@/components/structured-data";
+import { TikTokEmbed } from "@/components/tiktok-embed";
+import { RefreshIndicator } from "@/components/refresh-indicator";
 import { trends } from "@/lib/data";
 
 interface Props {
@@ -89,6 +91,12 @@ export default async function TrendPage({ params }: Props) {
     ],
   };
 
+  const sectionVideos = [
+    { id: "v1", videoId: "7157280000000000000", thumbnail: "https://images.unsplash.com/photo-1535525153412-5a42439a210d?w=400&h=700&fit=crop", views: "12.4M", likes: "2.1M", duration: "0:24" },
+    { id: "v2", videoId: "7157280000000000001", thumbnail: "https://images.unsplash.com/photo-1617802690992-15d93263d3a9?w=400&h=700&fit=crop", views: "8.7M", likes: "1.4M", duration: "0:31" },
+    { id: "v3", videoId: "7157280000000000002", thumbnail: "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=400&h=700&fit=crop", views: "6.2M", likes: "890K", duration: "0:18" },
+  ];
+
   return (
     <div className="max-w-lg mx-auto pb-12">
       <StructuredData type="article" data={articleData} />
@@ -119,6 +127,7 @@ export default async function TrendPage({ params }: Props) {
             )}
           </div>
         </div>
+        <RefreshIndicator />
       </div>
 
       {/* Hero Image */}
@@ -132,6 +141,14 @@ export default async function TrendPage({ params }: Props) {
           priority
         />
         <div className="absolute inset-0 bg-gradient-to-t from-tiktok-black via-transparent to-transparent" />
+
+        {/* Country badge */}
+        {trend.country && (
+          <div className="absolute top-4 left-4 flex items-center gap-1 bg-black/60 backdrop-blur-sm text-white text-xs font-medium px-2 py-1 rounded-full">
+            <Globe className="w-3 h-3" />
+            {trend.country}
+          </div>
+        )}
 
         {/* Growth badge */}
         <div className="absolute top-4 right-4 bg-tiktok-cyan/90 backdrop-blur-sm text-tiktok-black text-sm font-bold px-3 py-1.5 rounded-full flex items-center gap-1">
@@ -193,39 +210,152 @@ export default async function TrendPage({ params }: Props) {
 
       <AdSlot position="in-content" />
 
-      {/* Analysis Section */}
+      {/* Analytics Section */}
       <div className="px-4 py-4 space-y-4">
-        <h2 className="text-lg font-bold text-white">Signal Analysis</h2>
+        <div className="flex items-center gap-2 mb-2">
+          <BarChart3 className="w-5 h-5 text-tiktok-cyan" />
+          <h2 className="text-lg font-bold text-white">Signal Analysis</h2>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          {/* Score cards */}
+          <div className="bg-white/5 rounded-xl p-3 border border-white/5 text-center">
+            <span className="text-[10px] font-medium text-white/40 uppercase tracking-wider">Viral Score</span>
+            <div className="text-2xl font-bold text-tiktok-cyan mt-1">{trend.viralScore || 0}</div>
+            <div className="text-[10px] text-white/30 mt-0.5">/100</div>
+          </div>
+          <div className="bg-white/5 rounded-xl p-3 border border-white/5 text-center">
+            <span className="text-[10px] font-medium text-white/40 uppercase tracking-wider">Opportunity</span>
+            <div className="text-2xl font-bold text-green-400 mt-1">{trend.opportunityScore || 0}</div>
+            <div className="text-[10px] text-white/30 mt-0.5">/100</div>
+          </div>
+          <div className="bg-white/5 rounded-xl p-3 border border-white/5 text-center">
+            <span className="text-[10px] font-medium text-white/40 uppercase tracking-wider">Engagement</span>
+            <div className="text-2xl font-bold text-purple-400 mt-1">{trend.engagement || 0}</div>
+            <div className="text-[10px] text-white/30 mt-0.5">/100</div>
+          </div>
+          <div className="bg-white/5 rounded-xl p-3 border border-white/5 text-center">
+            <span className="text-[10px] font-medium text-white/40 uppercase tracking-wider">AI Score</span>
+            <div className="text-2xl font-bold text-yellow-400 mt-1">{trend.aiScore || 0}</div>
+            <div className="text-[10px] text-white/30 mt-0.5">/100</div>
+          </div>
+        </div>
+
+        {/* Progress bars */}
         <div className="space-y-3">
           <div className="bg-white/5 rounded-xl p-4 border border-white/5">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-medium text-white/40 uppercase tracking-wider">Velocity</span>
-              <span className="text-sm font-bold text-tiktok-cyan">High</span>
+              <span className="text-sm font-bold text-tiktok-cyan">{trend.velocity || 0}%</span>
             </div>
             <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
-              <div className="h-full w-[85%] bg-gradient-to-r from-tiktok-cyan to-tiktok-red rounded-full" />
+              <div className="h-full bg-gradient-to-r from-tiktok-cyan to-tiktok-red rounded-full" style={{ width: `${trend.velocity || 0}%` }} />
             </div>
           </div>
           <div className="bg-white/5 rounded-xl p-4 border border-white/5">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-medium text-white/40 uppercase tracking-wider">Saturation</span>
-              <span className="text-sm font-bold text-tiktok-red">Low</span>
+              <span className="text-sm font-bold text-tiktok-red">{trend.saturation || 0}%</span>
             </div>
             <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
-              <div className="h-full w-[25%] bg-gradient-to-r from-tiktok-cyan to-tiktok-red rounded-full" />
+              <div className="h-full bg-gradient-to-r from-tiktok-cyan to-tiktok-red rounded-full" style={{ width: `${trend.saturation || 0}%` }} />
             </div>
           </div>
           <div className="bg-white/5 rounded-xl p-4 border border-white/5">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-medium text-white/40 uppercase tracking-wider">Creator Fit</span>
-              <span className="text-sm font-bold text-green-400">Broad</span>
+              <span className="text-sm font-bold text-green-400">{trend.creatorFit || 0}%</span>
             </div>
             <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
-              <div className="h-full w-[72%] bg-gradient-to-r from-tiktok-cyan to-green-400 rounded-full" />
+              <div className="h-full bg-gradient-to-r from-tiktok-cyan to-green-400 rounded-full" style={{ width: `${trend.creatorFit || 0}%` }} />
             </div>
           </div>
         </div>
+
+        {/* Why it blows up + Action time */}
+        {(trend.whyItBlowsUp || trend.actionTime) && (
+          <div className="grid grid-cols-1 gap-3">
+            {trend.whyItBlowsUp && (
+              <div className="bg-gradient-to-r from-tiktok-cyan/5 to-transparent rounded-xl p-4 border border-tiktok-cyan/10">
+                <div className="flex items-center gap-2 mb-2">
+                  <Zap className="w-4 h-4 text-tiktok-cyan" />
+                  <span className="text-[10px] font-medium text-tiktok-cyan uppercase tracking-wider">Why it blows up</span>
+                </div>
+                <p className="text-xs text-white/60 leading-relaxed">{trend.whyItBlowsUp}</p>
+              </div>
+            )}
+            {trend.actionTime && (
+              <div className="bg-gradient-to-r from-tiktok-red/5 to-transparent rounded-xl p-4 border border-tiktok-red/10">
+                <div className="flex items-center gap-2 mb-2">
+                  <Target className="w-4 h-4 text-tiktok-red" />
+                  <span className="text-[10px] font-medium text-tiktok-red uppercase tracking-wider">Action required</span>
+                </div>
+                <p className="text-xs text-white/60 leading-relaxed">{trend.actionTime}</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* AI Prediction */}
+        {trend.aiPrediction && (
+          <div className="bg-purple-500/5 rounded-xl p-4 border border-purple-500/10">
+            <div className="flex items-center gap-2 mb-2">
+              <Sparkles className="w-4 h-4 text-purple-400" />
+              <span className="text-[10px] font-medium text-purple-400 uppercase tracking-wider">AI Prediction</span>
+            </div>
+            <p className="text-xs text-white/60 leading-relaxed">{trend.aiPrediction}</p>
+          </div>
+        )}
+
+        {/* Competition + Avg Views */}
+        <div className="flex gap-3">
+          {trend.competition && (
+            <div className="flex-1 bg-white/5 rounded-xl p-3 border border-white/5 text-center">
+              <span className="text-[10px] font-medium text-white/40 uppercase tracking-wider">Competition</span>
+              <div className={`text-lg font-bold mt-1 ${
+                trend.competition === "LOW" ? "text-green-400" :
+                trend.competition === "MEDIUM" ? "text-yellow-400" : "text-tiktok-red"
+              }`}>
+                {trend.competition}
+              </div>
+            </div>
+          )}
+          {trend.avgViews && (
+            <div className="flex-1 bg-white/5 rounded-xl p-3 border border-white/5 text-center">
+              <span className="text-[10px] font-medium text-white/40 uppercase tracking-wider">Avg Views</span>
+              <div className="text-lg font-bold text-white mt-1">{trend.avgViews}</div>
+            </div>
+          )}
+          {trend.creatorsUploaded !== undefined && (
+            <div className="flex-1 bg-white/5 rounded-xl p-3 border border-white/5 text-center">
+              <span className="text-[10px] font-medium text-white/40 uppercase tracking-wider">Uploaded</span>
+              <div className="text-lg font-bold text-white mt-1">{trend.creatorsUploaded.toLocaleString()}</div>
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* Example Videos */}
+      <div className="px-4 py-4">
+        <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+          <Flame className="w-5 h-5 text-tiktok-red" />
+          Example Videos
+        </h2>
+        <div className="flex gap-3 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide -mx-4 px-4">
+          {sectionVideos.map((video) => (
+            <TikTokEmbed
+              key={video.id}
+              videoId={video.videoId}
+              thumbnail={video.thumbnail}
+              views={video.views}
+              likes={video.likes}
+              duration={video.duration}
+            />
+          ))}
+        </div>
+      </div>
+
+      <AdSlot position="in-content" />
 
       {/* Related Trends */}
       {relatedTrends.length > 0 && (
