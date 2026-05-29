@@ -10,8 +10,8 @@ import { FloatingTags } from "@/components/floating-tags";
 import { StructuredData } from "@/components/structured-data";
 import { TikTokEmbed } from "@/components/tiktok-embed";
 import { RefreshIndicator } from "@/components/refresh-indicator";
-import { trends } from "@/lib/data";
 import { TrendHistoryChart } from "@/components/trend-history-chart";
+import { prisma } from "@/lib/prisma";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -19,8 +19,14 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
-  const trend = trends.find((t) => t.id === id);
+  const trend = await prisma.trend.findUnique({
+    where: { slug: id },
+    include: { tags: { include: { tag: true } } },
+  });
+
   if (!trend) return {};
+
+  const tags = trend.tags.map(t => `#${t.tag.name}`);
 
   return {
     title: trend.title,
@@ -28,44 +34,64 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title: `${trend.title} | TikTok Intelligence`,
       description: trend.description,
-      images: [{ url: trend.thumbnail, width: 600, height: 800, alt: trend.title }],
+      images: [{ url: trend.thumbnail || "/placeholder-trend.png", width: 600, height: 800, alt: trend.title }],
     },
     twitter: {
       card: "summary_large_image",
       title: trend.title,
       description: trend.description,
-      images: [trend.thumbnail],
+      images: [trend.thumbnail || "/placeholder-trend.png"],
     },
     alternates: {
-      canonical: `https://tiktok-intelligence.com/trend/${id}`,
+      canonical: `https://tictok.tubefission.com/trend/${id}`,
     },
   };
 }
 
 export async function generateStaticParams() {
-  return trends.map((t) => ({ id: t.id }));
+  const trends = await prisma.trend.findMany({
+    select: { slug: true },
+    take: 50,
+  });
+  return trends.map((t) => ({ id: t.slug }));
 }
 
 export default async function TrendPage({ params }: Props) {
   const { id } = await params;
-  const trend = trends.find((t) => t.id === id);
+
+  const trend = await prisma.trend.findUnique({
+    where: { slug: id },
+    include: { tags: { include: { tag: true } } },
+  });
+
   if (!trend) notFound();
 
-  const relatedTrends = trends.filter((t) => t.category === trend.category && t.id !== trend.id).slice(0, 3);
+  // Get related trends from same category
+  const relatedTrends = await prisma.trend.findMany({
+    where: {
+      category: trend.category,
+      slug: { not: id },
+    },
+    include: { tags: { include: { tag: true } } },
+    take: 3,
+    orderBy: { viralScore: "desc" },
+  });
+
+  const tags = trend.tags.map(t => `#${t.tag.name}`);
 
   const articleData = {
     headline: trend.title,
     description: trend.description,
-    image: trend.thumbnail,
-    datePublished: trend.publishedAt,
-    dateModified: trend.publishedAt,
+    image: trend.thumbnail || "/placeholder-trend.png",
+    datePublished: trend.createdAt.toISOString(),
+    dateModified: trend.updatedAt.toISOString(),
     author: {
       "@type": "Organization",
       name: "TikTok Intelligence",
     },
     mainEntityOfPage: {
       "@type": "WebPage",
-      "@id": `https://tiktok-intelligence.com/trend/${id}`,
+      "@id": `https://tictok.tubefission.com/trend/${id}`,
     },
   };
 
@@ -75,19 +101,19 @@ export default async function TrendPage({ params }: Props) {
         "@type": "ListItem",
         position: 1,
         name: "Home",
-        item: "https://tiktok-intelligence.com",
+        item: "https://tictok.tubefission.com",
       },
       {
         "@type": "ListItem",
         position: 2,
         name: trend.category,
-        item: `https://tiktok-intelligence.com/explore?category=${trend.category}`,
+        item: `https://tictok.tubefission.com/explore?category=${trend.category}`,
       },
       {
         "@type": "ListItem",
         position: 3,
         name: trend.title,
-        item: `https://tiktok-intelligence.com/trend/${id}`,
+        item: `https://tictok.tubefission.com/trend/${id}`,
       },
     ],
   };
@@ -121,9 +147,9 @@ export default async function TrendPage({ params }: Props) {
                 <Flame className="w-3 h-3" /> Viral
               </span>
             )}
-            {trend.isNew && !trend.isViral && (
+            {!trend.isViral && (
               <span className="flex items-center gap-1 text-tiktok-cyan text-[10px] font-bold uppercase">
-                <Sparkles className="w-3 h-3" /> New
+                <Sparkles className="w-3 h-3" /> Trending
               </span>
             )}
           </div>
@@ -133,13 +159,13 @@ export default async function TrendPage({ params }: Props) {
 
       {/* Hero Image — Click to search on TikTok */}
       <a
-        href={`https://www.tiktok.com/search?q=${encodeURIComponent(trend.tags[0]?.replace('#', '') || trend.title)}`}
+        href={`https://www.tiktok.com/search?q=${encodeURIComponent(tags[0]?.replace('#', '') || trend.title)}`}
         target="_blank"
         rel="noopener noreferrer"
         className="relative aspect-[4/5] w-full block cursor-pointer group"
       >
         <Image
-          src={trend.thumbnail}
+          src={trend.thumbnail || "/placeholder-trend.png"}
           alt={trend.title}
           fill
           className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
@@ -173,7 +199,7 @@ export default async function TrendPage({ params }: Props) {
         {/* Growth badge */}
         <div className="absolute top-4 right-4 bg-tiktok-cyan/90 backdrop-blur-sm text-tiktok-black text-sm font-bold px-3 py-1.5 rounded-full flex items-center gap-1 pointer-events-none">
           <TrendingUp className="w-4 h-4" />
-          +{trend.growthRate}%
+          +{trend.growthRate.toFixed(1)}%
         </div>
 
         {/* Title overlay */}
@@ -181,7 +207,7 @@ export default async function TrendPage({ params }: Props) {
           <h1 className="text-2xl font-bold text-white leading-tight mb-2">
             {trend.title}
           </h1>
-          <FloatingTags tags={trend.tags} />
+          <FloatingTags tags={tags} />
         </div>
       </a>
 
@@ -200,7 +226,7 @@ export default async function TrendPage({ params }: Props) {
           </div>
           <div className="flex items-center gap-1.5 text-sm text-white/60">
             <Clock className="w-4 h-4" />
-            <span className="text-xs">{trend.publishedAt}</span>
+            <span className="text-xs">{trend.createdAt.toISOString().split("T")[0]}</span>
           </div>
         </div>
       </div>
@@ -241,22 +267,22 @@ export default async function TrendPage({ params }: Props) {
           {/* Score cards */}
           <div className="bg-white/5 rounded-xl p-3 border border-white/5 text-center">
             <span className="text-[10px] font-medium text-white/40 uppercase tracking-wider">Viral Score</span>
-            <div className="text-2xl font-bold text-tiktok-cyan mt-1">{trend.viralScore || 0}</div>
+            <div className="text-2xl font-bold text-tiktok-cyan mt-1">{trend.viralScore?.toFixed(0) || 0}</div>
             <div className="text-[10px] text-white/30 mt-0.5">/100</div>
           </div>
           <div className="bg-white/5 rounded-xl p-3 border border-white/5 text-center">
             <span className="text-[10px] font-medium text-white/40 uppercase tracking-wider">Opportunity</span>
-            <div className="text-2xl font-bold text-green-400 mt-1">{trend.opportunityScore || 0}</div>
+            <div className="text-2xl font-bold text-green-400 mt-1">{trend.opportunityScore?.toFixed(0) || 0}</div>
             <div className="text-[10px] text-white/30 mt-0.5">/100</div>
           </div>
           <div className="bg-white/5 rounded-xl p-3 border border-white/5 text-center">
             <span className="text-[10px] font-medium text-white/40 uppercase tracking-wider">Engagement</span>
-            <div className="text-2xl font-bold text-purple-400 mt-1">{trend.engagement || 0}</div>
+            <div className="text-2xl font-bold text-purple-400 mt-1">{trend.engagement?.toFixed(0) || 0}</div>
             <div className="text-[10px] text-white/30 mt-0.5">/100</div>
           </div>
           <div className="bg-white/5 rounded-xl p-3 border border-white/5 text-center">
-            <span className="text-[10px] font-medium text-white/40 uppercase tracking-wider">AI Score</span>
-            <div className="text-2xl font-bold text-yellow-400 mt-1">{trend.aiScore || 0}</div>
+            <span className="text-[10px] font-medium text-white/40 uppercase tracking-wider">Velocity</span>
+            <div className="text-2xl font-bold text-yellow-400 mt-1">{trend.velocity?.toFixed(0) || 0}</div>
             <div className="text-[10px] text-white/30 mt-0.5">/100</div>
           </div>
         </div>
@@ -266,35 +292,35 @@ export default async function TrendPage({ params }: Props) {
           <div className="bg-white/5 rounded-xl p-4 border border-white/5">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-medium text-white/40 uppercase tracking-wider">Velocity</span>
-              <span className="text-sm font-bold text-tiktok-cyan">{trend.velocity || 0}%</span>
+              <span className="text-sm font-bold text-tiktok-cyan">{trend.velocity?.toFixed(0) || 0}%</span>
             </div>
             <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
-              <div className="h-full bg-gradient-to-r from-tiktok-cyan to-tiktok-red rounded-full" style={{ width: `${trend.velocity || 0}%` }} />
+              <div className="h-full bg-gradient-to-r from-tiktok-cyan to-tiktok-red rounded-full" style={{ width: `${Math.min(trend.velocity || 0, 100)}%` }} />
             </div>
           </div>
           <div className="bg-white/5 rounded-xl p-4 border border-white/5">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-medium text-white/40 uppercase tracking-wider">Saturation</span>
-              <span className="text-sm font-bold text-tiktok-red">{trend.saturation || 0}%</span>
+              <span className="text-sm font-bold text-tiktok-red">{trend.saturation?.toFixed(0) || 0}%</span>
             </div>
             <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
-              <div className="h-full bg-gradient-to-r from-tiktok-cyan to-tiktok-red rounded-full" style={{ width: `${trend.saturation || 0}%` }} />
+              <div className="h-full bg-gradient-to-r from-tiktok-cyan to-tiktok-red rounded-full" style={{ width: `${Math.min(trend.saturation || 0, 100)}%` }} />
             </div>
           </div>
           <div className="bg-white/5 rounded-xl p-4 border border-white/5">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-medium text-white/40 uppercase tracking-wider">Creator Fit</span>
-              <span className="text-sm font-bold text-green-400">{trend.creatorFit || 0}%</span>
+              <span className="text-sm font-bold text-green-400">{trend.creatorFit?.toFixed(0) || 0}%</span>
             </div>
             <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
-              <div className="h-full bg-gradient-to-r from-tiktok-cyan to-green-400 rounded-full" style={{ width: `${trend.creatorFit || 0}%` }} />
+              <div className="h-full bg-gradient-to-r from-tiktok-cyan to-green-400 rounded-full" style={{ width: `${Math.min(trend.creatorFit || 0, 100)}%` }} />
             </div>
           </div>
         </div>
 
         {/* Trend History Chart */}
         <TrendHistoryChart
-          trendId={trend.id}
+          trendId={trend.slug}
           growthRate={trend.growthRate}
         />
 
@@ -352,12 +378,6 @@ export default async function TrendPage({ params }: Props) {
               <div className="text-lg font-bold text-white mt-1">{trend.avgViews}</div>
             </div>
           )}
-          {trend.creatorsUploaded !== undefined && (
-            <div className="flex-1 bg-white/5 rounded-xl p-3 border border-white/5 text-center">
-              <span className="text-[10px] font-medium text-white/40 uppercase tracking-wider">Uploaded</span>
-              <div className="text-lg font-bold text-white mt-1">{trend.creatorsUploaded.toLocaleString()}</div>
-            </div>
-          )}
         </div>
       </div>
 
@@ -390,17 +410,17 @@ export default async function TrendPage({ params }: Props) {
           <div className="space-y-3">
             {relatedTrends.map((t) => (
               <Link
-                key={t.id}
-                href={`/trend/${t.id}`}
+                key={t.slug}
+                href={`/trend/${t.slug}`}
                 className="flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/5 hover:bg-white/[0.07] transition-colors"
               >
                 <div className="relative w-14 h-14 rounded-lg overflow-hidden flex-shrink-0">
-                  <Image src={t.thumbnail} alt={t.title} fill className="object-cover" sizes="56px" />
+                  <Image src={t.thumbnail || "/placeholder-trend.png"} alt={t.title} fill className="object-cover" sizes="56px" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="text-sm font-semibold text-white truncate">{t.title}</h3>
                   <div className="flex items-center gap-2 text-xs text-white/40 mt-0.5">
-                    <span className="text-tiktok-cyan">+{t.growthRate}%</span>
+                    <span className="text-tiktok-cyan">+{t.growthRate.toFixed(1)}%</span>
                     <span>{t.views} views</span>
                   </div>
                 </div>
