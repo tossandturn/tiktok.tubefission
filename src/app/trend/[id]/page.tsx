@@ -26,8 +26,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (!trend) return {};
 
-  const tags = trend.tags.map(t => `#${t.tag.name}`);
-
   return {
     title: trend.title,
     description: trend.description,
