@@ -81,7 +81,7 @@ export default async function TrendPage({ params }: Props) {
     headline: trend.title,
     description: trend.description,
     image: trend.thumbnail || "/placeholder-trend.png",
-    datePublished: trend.createdAt.toISOString(),
+    datePublished: trend.updatedAt.toISOString(),
     dateModified: trend.updatedAt.toISOString(),
     author: {
       "@type": "Organization",
