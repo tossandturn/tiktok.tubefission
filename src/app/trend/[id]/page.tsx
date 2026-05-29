@@ -113,6 +113,7 @@ export default async function TrendPage({ params }: Props) {
         aiPrediction: staticTrend.aiPrediction || null,
         updatedAt: new Date(),
         tags: [],
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any;
       tags = staticTrend.tags || [];
       source = "static";
