@@ -72,7 +72,8 @@ export default async function TrendPage({ params }: Props) {
   const { id } = await params;
 
   // Try database first
-  let trend = await prisma.trend.findUnique({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let trend: any = await prisma.trend.findUnique({
     where: { slug: id },
     include: { tags: { include: { tag: true } } },
   });
@@ -85,6 +86,7 @@ export default async function TrendPage({ params }: Props) {
     const staticTrend = staticTrends.find((t) => t.id === id);
     if (staticTrend) {
       // Convert static trend to database format
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       trend = {
         id: staticTrend.id,
         slug: staticTrend.id,
@@ -111,7 +113,7 @@ export default async function TrendPage({ params }: Props) {
         aiPrediction: staticTrend.aiPrediction || null,
         updatedAt: new Date(),
         tags: [],
-      };
+      } as any;
       tags = staticTrend.tags || [];
       source = "static";
     }
