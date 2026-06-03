@@ -131,6 +131,7 @@ model Creator {
 
   trends TrendCreator[]
   videos CreatorVideo[]
+  watchlists Watchlist[]
 
   @@index([momentumScore])
   @@index([followers])
@@ -173,6 +174,9 @@ model Hashtag {
   viralScore  Float?
   relatedHashtags Json?
   scrapedAt   DateTime @default(now())
+
+  // Relations
+  watchlists  Watchlist[]
 
   @@index([isRising])
   @@index([growthRate])
@@ -229,6 +233,128 @@ model ScrapeLog {
   metadata  Json?
   startedAt DateTime @default(now())
   endedAt   DateTime?
+}
+
+// User Authentication Models
+model User {
+  id            String   @id @default(cuid())
+  username      String   @unique
+  email         String   @unique
+  passwordHash  String
+  emailVerified Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  lastLogin     DateTime?
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  sessions          Session[]
+  emailVerifications EmailVerification[]
+  passwordResets    PasswordReset[]
+  watchlists        Watchlist[]
+  alerts            Alert[]
+  analyses          UserAnalysis[]
+
+  @@index([email])
+  @@index([username])
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+}
+
+model EmailVerification {
+  id        String    @id @default(cuid())
+  userId    String
+  token     String    @unique
+  expiresAt DateTime
+  verifiedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+}
+
+model PasswordReset {
+  id        String    @id @default(cuid())
+  userId    String
+  token     String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+}
+
+// Watchlist Model
+model Watchlist {
+  id        String   @id @default(cuid())
+  userId    String
+  trendId   String?
+  hashtagId String?
+  creatorId String?
+  videoId   String?
+  notes     String?
+  alertEnabled Boolean @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  trend Trend? @relation(fields: [trendId], references: [id], onDelete: Cascade)
+  hashtag Hashtag? @relation(fields: [hashtagId], references: [id], onDelete: Cascade)
+  creator Creator? @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([trendId])
+  @@index([hashtagId])
+  @@index([creatorId])
+}
+
+// Enhanced Alert System
+model Alert {
+  id          String   @id @default(cuid())
+  userId      String
+  type        String   // viral_spike, new_trend, momentum_change, threshold
+  targetType  String?  // trend, hashtag, creator, video
+  targetId    String?
+  threshold   Float?
+  isActive    Boolean  @default(true)
+  frequency   String   @default("daily") // daily, weekly, realtime
+  lastSent    DateTime?
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isActive])
+}
+
+// User Analysis History
+model UserAnalysis {
+  id          String   @id @default(cuid())
+  userId      String
+  type        String   // video, creator, hashtag
+  targetId    String
+  targetUrl   String?
+  data        Json?
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
 }
 
 model UserAlert {
