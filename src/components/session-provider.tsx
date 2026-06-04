@@ -52,18 +52,25 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string) => {
     try {
+      console.log("[Session] Attempting login for:", email);
+
       const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
 
+      console.log("[Session] Response status:", response.status);
+
       const data = await response.json();
+      console.log("[Session] Response data:", data);
 
       if (!response.ok) {
         if (data.needsVerification) {
+          console.log("[Session] Email not verified");
           return { success: false, needsVerification: true, error: data.error };
         }
+        console.log("[Session] Login failed:", data.error);
         return { success: false, error: data.error || "Login failed" };
       }
 
@@ -72,9 +79,11 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       localStorage.setItem("user_data", JSON.stringify(data.user));
       setUser(data.user);
 
+      console.log("[Session] Login successful, user:", data.user.username);
       return { success: true };
-    } catch {
-      return { success: false, error: "Network error" };
+    } catch (error) {
+      console.error("[Session] Network error:", error);
+      return { success: false, error: "Network error - check console" };
     }
   };
 

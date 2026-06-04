@@ -4,9 +4,10 @@ import bcrypt from "bcryptjs";
 
 export async function POST(req: Request) {
   try {
-    const { email, password } = await req.json();
+    console.log(`[Login] Attempt for email: ${email}`);
 
     if (!email || !password) {
+      console.log("[Login] Failed: Missing email or password");
       return NextResponse.json(
         { error: "Email and password are required" },
         { status: 400 }
@@ -19,28 +20,37 @@ export async function POST(req: Request) {
     });
 
     if (!user) {
+      console.log(`[Login] Failed: User not found for email ${email}`);
       return NextResponse.json(
         { error: "Invalid credentials" },
         { status: 401 }
       );
     }
+
+    console.log(`[Login] User found: ${user.username}`);
 
     // Check password
     const isValid = await bcrypt.compare(password, user.passwordHash);
     if (!isValid) {
+      console.log(`[Login] Failed: Invalid password for user ${user.username}`);
       return NextResponse.json(
         { error: "Invalid credentials" },
         { status: 401 }
       );
     }
 
+    console.log(`[Login] Password valid for user ${user.username}`);
+
     // Check email verification
     if (!user.emailVerified) {
+      console.log(`[Login] Failed: Email not verified for user ${user.username}`);
       return NextResponse.json(
         { error: "Please verify your email first", needsVerification: true },
         { status: 403 }
       );
     }
+
+    console.log(`[Login] Success: User ${user.username} logged in`);
 
     // Update last login
     await prisma.user.update({
