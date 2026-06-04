@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import jsPDF from 'jspdf'
 import { Button } from '@/components/ui/button'
-import { Download, Share2, Link2, MessageCircle } from 'lucide-react'
+import { Download, Share2, Link2 } from 'lucide-react'
 
 interface VideoExportProps {
   video: {
@@ -27,7 +27,7 @@ interface VideoExportProps {
   velocity?: number
 }
 
-export default function VideoExport({ video, velocity = 0 }: VideoExportProps) {
+export default function VideoExport({ video }: VideoExportProps) {
   const [showShareMenu, setShowShareMenu] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
 
@@ -199,7 +199,7 @@ export default function VideoExport({ video, velocity = 0 }: VideoExportProps) {
       const radius = 25
 
       // Draw pie segments
-      let currentAngle = 0
+      // let currentAngle = 0
       const segments = [
         { value: likes, label: 'Likes', color: [0, 242, 234] },
         { value: comments * 2, label: 'Comments', color: [255, 0, 80] },
@@ -208,7 +208,7 @@ export default function VideoExport({ video, velocity = 0 }: VideoExportProps) {
 
       segments.forEach((seg) => {
         if (totalEngagement > 0 && seg.value > 0) {
-          const angle = (seg.value / totalEngagement) * 360
+          // const angle = (seg.value / totalEngagement) * 360
           doc.setFillColor(seg.color[0], seg.color[1], seg.color[2])
           // Draw segment (simplified as circle sectors)
           doc.ellipse(chartX, chartY, radius, radius, 'F')

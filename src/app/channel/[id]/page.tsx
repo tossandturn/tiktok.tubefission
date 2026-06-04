@@ -9,7 +9,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   ArrowLeft, Users, Eye, Heart, TrendingUp, Award,
-  BarChart3, Target, Calendar, Video, Share2, Zap
+  BarChart3, Share2, Zap
 } from "lucide-react";
 
 interface ChannelPageProps {

@@ -168,9 +168,9 @@ async function getStealthPage(region?: string): Promise<Page> {
     Object.defineProperty(navigator, "plugins", {
       get: () => [{ name: "Chrome PDF Plugin", filename: "internal-pdf-viewer" }],
     });
-    // @ts-expect-error
+    // @ts-expect-error Playwright types workaround
     window.chrome = { runtime: {}, loadTimes: () => ({}), csi: () => ({}), app: {} };
-    // @ts-expect-error
+    // @ts-expect-error Playwright types workaround
     delete navigator.__proto__.webdriver;
   });
 

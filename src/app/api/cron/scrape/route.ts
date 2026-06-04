@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { scrapeHashtagList, scrapeHashtagVideos, batchScrapeHashtags, ALL_HASHTAGS, closeBrowser } from "@/lib/scraper-enhanced";
+import { scrapeHashtagList, batchScrapeHashtags, closeBrowser } from "@/lib/scraper-enhanced";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300; // 5 minutes max
