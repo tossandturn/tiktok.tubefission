@@ -3,6 +3,9 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { HashtagProfile } from "@/components/hashtag-profile";
 import { TrendingGrid } from "@/components/trending-grid";
+import { RelatedContent } from "@/components/related-content";
+import Script from "next/script";
+import { generateTopicSchema, generateBreadcrumbSchema, truncateDescription } from "@/lib/seo";
 
 interface HashtagPageProps {
   params: Promise<{
@@ -32,9 +35,14 @@ export async function generateMetadata({ params }: HashtagPageProps): Promise<Me
     };
   }
 
+  const title = `#${hashtag.name} TikTok Analytics & Trend Report`;
+  const description = truncateDescription(
+    `Analyze #${hashtag.name} TikTok hashtag performance. ${hashtag.views} views across ${hashtag.videos} videos. Growth rate: ${hashtag.growthRate.toFixed(1)}%. Discover trending content, viral potential and audience insights.`
+  );
+
   return {
-    title: `#${hashtag.name} Hashtag Analytics | ${hashtag.views} Views | TikTok Intelligence`,
-    description: `Analyze #${hashtag.name} hashtag performance. ${hashtag.views} views across ${hashtag.videos} videos. Growth rate: ${hashtag.growthRate.toFixed(1)}%. Discover trending content and viral potential.`,
+    title,
+    description,
     keywords: [
       `#${hashtag.name}`,
       hashtag.name,
@@ -44,11 +52,19 @@ export async function generateMetadata({ params }: HashtagPageProps): Promise<Me
       "trending hashtag",
       hashtag.category || "TikTok",
       "hashtag strategy",
+      "content trends",
     ],
+    canonical: `https://tiktok.tubefission.com/hashtag/${encodeURIComponent(hashtag.name)}`,
     openGraph: {
       title: `#${hashtag.name} - TikTok Hashtag Analytics`,
-      description: `${hashtag.views} views · ${hashtag.videos} videos · ${hashtag.growthRate.toFixed(1)}% growth`,
+      description,
+      url: `https://tiktok.tubefission.com/hashtag/${encodeURIComponent(hashtag.name)}`,
       type: "article",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `#${hashtag.name} - TikTok Analytics`,
+      description,
     },
   };
 }
@@ -80,7 +96,7 @@ export default async function HashtagPage({ params }: HashtagPageProps) {
     notFound();
   }
 
-  // Find trends related to this hashtag through tags
+  // Find trends related to this hashtag
   const relatedTrends = await prisma.trend.findMany({
     where: {
       tags: {
@@ -95,8 +111,61 @@ export default async function HashtagPage({ params }: HashtagPageProps) {
     orderBy: { viralScore: "desc" },
   });
 
+  // Get related hashtags (same category)
+  const relatedHashtags = await prisma.hashtag.findMany({
+    where: {
+      category: hashtag.category,
+      name: { not: decodedName },
+    },
+    take: 8,
+    orderBy: { viralScore: "desc" },
+  });
+
+  // Get top creators using this hashtag
+  const topCreators = await prisma.creator.findMany({
+    where: {
+      niche: hashtag.category,
+    },
+    take: 6,
+    orderBy: { followers: "desc" },
+    select: {
+      id: true,
+      username: true,
+      displayName: true,
+      avatar: true,
+      followers: true,
+      niche: true,
+    },
+  });
+
+  // Generate JSON-LD
+  const topicSchema = generateTopicSchema(
+    hashtag.name,
+    `TikTok hashtag analytics for #${hashtag.name}`,
+    relatedTrends.length,
+    topCreators.length
+  );
+
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: "Home", url: "/" },
+    { name: "Hashtags", url: "/explore" },
+    { name: `#${hashtag.name}`, url: `/hashtag/${encodeURIComponent(hashtag.name)}` },
+  ]);
+
   return (
     <div className="min-h-screen bg-black">
+      {/* JSON-LD */}
+      <Script
+        id="topic-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(topicSchema) }}
+      />
+      <Script
+        id="breadcrumb-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+
       <HashtagProfile hashtag={hashtag} />
 
       {relatedTrends.length > 0 && (
@@ -109,6 +178,14 @@ export default async function HashtagPage({ params }: HashtagPageProps) {
           </div>
         </section>
       )}
+
+      {/* Internal Linking */}
+      <RelatedContent
+        hashtags={relatedHashtags}
+        creators={topCreators}
+        currentType="hashtag"
+        currentName={`#${hashtag.name}`}
+      />
     </div>
   );
 }

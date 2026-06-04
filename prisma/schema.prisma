@@ -97,14 +97,19 @@ model Video {
   engagementRate Float?
   retentionRate  Float?
   watchTime      Float?
+  // Trend Score
+  trendScore     Float    @default(0)
   publishedAt  DateTime @default(now())
   scrapedAt    DateTime @default(now())
 
   trend Trend @relation(fields: [trendId], references: [id], onDelete: Cascade)
+  // Daily snapshots for historical data
+  dailySnapshots VideoDailySnapshot[]
 
   @@index([trendId])
   @@index([scrapedAt])
   @@index([viralScore])
+  @@index([trendScore])
 }
 
 model Creator {
@@ -133,6 +138,8 @@ model Creator {
   trends TrendCreator[]
   videos CreatorVideo[]
   watchlists Watchlist[]
+  // Daily snapshots for historical data
+  dailySnapshots CreatorDailySnapshot[]
 
   @@index([momentumScore])
   @@index([followers])
@@ -179,6 +186,8 @@ model Hashtag {
 
   // Relations
   watchlists  Watchlist[]
+  // Daily snapshots for historical data
+  dailySnapshots HashtagDailySnapshot[]
 
   @@unique([name, country])
   @@index([country])
@@ -421,4 +430,94 @@ model Report {
   @@index([userId])
   @@index([shareToken])
   @@index([type])
+}
+
+// ============================================
+// DAILY SNAPSHOT MODELS - For Historical Data
+// ============================================
+
+// Task 1: Creator Daily Snapshot
+model CreatorDailySnapshot {
+  id            String   @id @default(cuid())
+  creatorId     String
+  followers     Int
+  following     Int
+  totalLikes    BigInt
+  totalVideos   Int
+  // AI Metrics for trend calculation
+  trendScore    Float    @default(0)
+  createdAt     DateTime @default(now())
+
+  creator Creator @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+
+  @@index([creatorId])
+  @@index([createdAt])
+  @@index([trendScore])
+}
+
+// Task 2: Video Daily Snapshot
+model VideoDailySnapshot {
+  id            String   @id @default(cuid())
+  videoId       String
+  views         BigInt
+  likes         BigInt
+  comments      BigInt
+  shares        BigInt
+  // Growth metrics
+  viewsGrowth   Float    @default(0)
+  likesGrowth   Float    @default(0)
+  sharesGrowth  Float    @default(0)
+  commentsGrowth Float   @default(0)
+  // Trend Score
+  trendScore    Float    @default(0)
+  collectedAt   DateTime @default(now())
+
+  video Video @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  @@index([videoId])
+  @@index([collectedAt])
+  @@index([trendScore])
+}
+
+// Task 3: Hashtag Daily Snapshot
+model HashtagDailySnapshot {
+  id            String   @id @default(cuid())
+  hashtagId     String
+  usageCount    BigInt
+  videoCount    Int      @default(0)
+  viewCount     BigInt   @default(0)
+  // Growth metrics
+  growthRate    Float    @default(0)
+  trendScore    Float    @default(0)
+  collectedAt   DateTime @default(now())
+
+  hashtag Hashtag @relation(fields: [hashtagId], references: [id], onDelete: Cascade)
+
+  @@index([hashtagId])
+  @@index([collectedAt])
+  @@index([trendScore])
+}
+
+// SECTION 8: Opportunity Score Tracking
+model OpportunityScore {
+  id              String   @id @default(cuid())
+  // Can be trend, hashtag, or niche
+  targetType      String   // "trend", "hashtag", "niche"
+  targetId        String?
+  name            String
+  // Demand metrics
+  demandScore     Float    @default(0)  // Based on views, likes, growth
+  // Competition metrics
+  competitionScore Float   @default(0)  // Based on creatorCount, videoCount
+  // Opportunity = Demand / Competition
+  opportunityScore Float   @default(0)
+  // Metadata
+  country         String   @default("US")
+  calculatedAt    DateTime @default(now())
+  expiresAt       DateTime?
+
+  @@index([targetType])
+  @@index([opportunityScore])
+  @@index([calculatedAt])
+  @@index([country])
 }
