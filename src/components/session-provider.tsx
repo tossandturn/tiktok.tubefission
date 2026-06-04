@@ -43,7 +43,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       if (userData) {
         setUser(JSON.parse(userData));
       }
-    } catch {
+    } catch (error) {
       console.error("Session check failed:", error);
     } finally {
       setIsLoading(false);
