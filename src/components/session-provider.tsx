@@ -73,7 +73,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       setUser(data.user);
 
       return { success: true };
-    } catch (error) {
+    } catch {
       return { success: false, error: "Network error" };
     }
   };
@@ -93,7 +93,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       }
 
       return { success: true };
-    } catch (error) {
+    } catch {
       return { success: false, error: "Network error" };
     }
   };
