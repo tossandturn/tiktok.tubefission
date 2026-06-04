@@ -10,6 +10,8 @@ jobs:
   check-status:
     runs-on: ubuntu-latest
     name: Check Scraper Status
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - name: Check last run status
         run: |
