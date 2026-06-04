@@ -50,10 +50,6 @@ export default async function ChannelPage({ params }: ChannelPageProps) {
 
   const creator = await prisma.creator.findUnique({
     where: { username: id },
-    include: {
-      trends: { include: { trend: true }, take: 6 },
-      videos: { take: 6, orderBy: { createdAt: "desc" } },
-    },
   });
 
   if (!creator) {
@@ -219,71 +215,8 @@ export default async function ChannelPage({ params }: ChannelPageProps) {
         </div>
       </div>
 
-      {/* Associated Trends */}
-      {creator.trends.length > 0 && (
-        <div className="max-w-4xl mx-auto px-4 mb-8">
-          <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-            <Target className="w-5 h-5 text-orange-500" />
-            Associated Trends
-          </h2>
-          <div className="grid sm:grid-cols-2 gap-3">
-            {creator.trends.map((t) => (
-              <Link
-                key={t.trend.id}
-                href={`/trend/${t.trend.slug}`}
-                className="flex items-center gap-3 p-3 bg-zinc-900 rounded-xl border border-zinc-800 hover:border-zinc-700 transition-colors"
-              >
-                <div className="w-12 h-12 rounded-lg bg-zinc-800 flex-shrink-0 overflow-hidden">
-                  {t.trend.thumbnail && (
-                    <Image src={t.trend.thumbnail} alt={t.trend.title} fill className="object-cover" />
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-sm font-medium text-white truncate">{t.trend.title}</h3>
-                  <div className="flex items-center gap-2 text-xs text-zinc-500">
-                    <span className="text-[#00f2ea]">+{t.trend.growthRate.toFixed(1)}%</span>
-                    <span>{t.trend.views} views</span>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Recent Videos */}
-      {creator.videos.length > 0 && (
-        <div className="max-w-4xl mx-auto px-4 pb-12">
-          <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-            <Video className="w-5 h-5 text-purple-500" />
-            Recent Videos
-          </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {creator.videos.map((video) => (
-              <Link
-                key={video.id}
-                href={`/video/${video.id}`}
-                className="group aspect-[9/16] bg-zinc-900 rounded-xl overflow-hidden relative"
-              >
-                {video.thumbnail ? (
-                  <Image src={video.thumbnail} alt={video.description || "Video"} fill className="object-cover group-hover:scale-105 transition duration-300" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-zinc-800">
-                    <Video className="w-8 h-8 text-zinc-600" />
-                  </div>
-                )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-3">
-                  <div className="flex items-center gap-1 text-white text-xs">
-                    <Eye className="w-3 h-3" />
-                    {formatNumber(Number(video.views))}
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
+      {/* Associated Trends - Coming Soon */}
+      {/* Recent Videos - Coming Soon */}
     </div>
   );
 }

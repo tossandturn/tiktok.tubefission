@@ -8,10 +8,10 @@ import Image from "next/image";
 interface TikTokEmbedProps {
   videoId?: string;
   username?: string;
-  thumbnail: string;
-  views: string;
-  likes: string;
-  duration: string;
+  thumbnail: string | null;
+  views?: string;
+  likes?: string;
+  duration?: string;
   searchQuery?: string;
   embedUrl?: string;
 }
@@ -80,13 +80,19 @@ export function TikTokEmbed({
         onClick={handleOpen}
       >
         <div className="relative aspect-[9/16] rounded-xl overflow-hidden bg-white/5">
-          <Image
-            src={thumbnail}
-            alt="Video thumbnail"
-            fill
-            className="object-cover transition-transform group-hover:scale-105"
-            sizes="160px"
-          />
+          {thumbnail ? (
+            <Image
+              src={thumbnail}
+              alt="Video thumbnail"
+              fill
+              className="object-cover transition-transform group-hover:scale-105"
+              sizes="160px"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-zinc-800">
+              <Play className="w-10 h-10 text-zinc-600" />
+            </div>
+          )}
           <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors" />
 
           {/* Play button */}
@@ -166,13 +172,19 @@ export function TikTokEmbed({
                   />
                 ) : (
                   <div className="aspect-[9/16] relative">
-                    <Image
-                      src={thumbnail}
-                      alt="Video thumbnail"
-                      fill
-                      className="object-cover"
-                      sizes="400px"
-                    />
+                    {thumbnail ? (
+                      <Image
+                        src={thumbnail}
+                        alt="Video thumbnail"
+                        fill
+                        className="object-cover"
+                        sizes="400px"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-zinc-800">
+                        <Play className="w-16 h-16 text-zinc-600" />
+                      </div>
+                    )}
                     <div className="absolute inset-0 bg-black/70" />
                     <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 p-6">
                       <div className="w-16 h-16 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center">

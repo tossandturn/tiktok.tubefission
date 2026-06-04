@@ -157,7 +157,7 @@ async function getStealthPage(region?: string): Promise<Page> {
     userAgent: userAgents[Math.floor(Math.random() * userAgents.length)],
     viewport,
     locale: config.locale,
-    timezoneId: config.timezoneId,
+    timezoneId: config.timezone,
   });
 
   const page = await context.newPage();

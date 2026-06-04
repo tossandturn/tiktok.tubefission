@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import jsPDF from 'jspdf'
 import { Button } from '@/components/ui/button'
-import { Download, Share2, Link2, Twitter, Facebook, Linkedin, MessageCircle } from 'lucide-react'
+import { Download, Share2, Link2, MessageCircle } from 'lucide-react'
 
 interface VideoExportProps {
   video: {
@@ -401,21 +401,21 @@ export default function VideoExport({ video, velocity = 0 }: VideoExportProps) {
               onClick={() => shareToSocial('twitter')}
               className="w-full flex items-center gap-2 px-3 py-2 hover:bg-zinc-800 rounded-lg transition text-left text-white text-sm"
             >
-              <Twitter className="w-4 h-4 text-blue-400" />
+              <span className="w-4 h-4 text-blue-400">𝕏</span>
               Twitter
             </button>
             <button
               onClick={() => shareToSocial('facebook')}
               className="w-full flex items-center gap-2 px-3 py-2 hover:bg-zinc-800 rounded-lg transition text-left text-white text-sm"
             >
-              <Facebook className="w-4 h-4 text-blue-600" />
+              <span className="w-4 h-4 text-blue-600">f</span>
               Facebook
             </button>
             <button
               onClick={() => shareToSocial('linkedin')}
               className="w-full flex items-center gap-2 px-3 py-2 hover:bg-zinc-800 rounded-lg transition text-left text-white text-sm"
             >
-              <Linkedin className="w-4 h-4 text-blue-700" />
+              <span className="w-4 h-4 text-blue-700">in</span>
               LinkedIn
             </button>
           </div>
