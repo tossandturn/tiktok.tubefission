@@ -50,6 +50,7 @@ model Trend {
   tags          TrendTag[]
   videos        Video[]
   trendCreators TrendCreator[]
+  watchlists    Watchlist[]
 
   @@index([category])
   @@index([country])
