@@ -176,7 +176,7 @@ export async function POST(req: Request) {
     });
 
     // Send verification email
-    const sent = await sendVerificationEmail(email, username, token);
+    await sendVerificationEmail(email, username, token);
 
     return NextResponse.json({
       success: true,
