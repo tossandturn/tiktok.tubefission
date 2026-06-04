@@ -1,6 +1,6 @@
 import { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
-import { SEO_KEYWORDS } from "./topic/[keyword]/page";
+import { SEO_KEYWORDS } from "@/lib/seo-keywords";
 
 const BASE_URL = "https://tictok.tubefission.com";
 
@@ -78,14 +78,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Fetch videos
   const videos = await prisma.video.findMany({
-    select: { id: true, updatedAt: true },
+    select: { id: true, scrapedAt: true },
     take: 100,
     orderBy: { views: "desc" },
   });
 
   const videoRoutes: MetadataRoute.Sitemap = videos.map((video) => ({
     url: `${BASE_URL}/video/${video.id}`,
-    lastModified: video.updatedAt,
+    lastModified: video.scrapedAt,
     changeFrequency: "daily",
     priority: 0.8,
   }));
