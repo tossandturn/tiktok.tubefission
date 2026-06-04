@@ -44,6 +44,40 @@ interface ExploreContentProps {
   };
 }
 
+interface CreatorData {
+  id: string;
+  username: string;
+  displayName: string;
+  avatar?: string | null;
+  followers: number;
+  niche?: string | null;
+  momentumScore?: number | null;
+  isVerified?: boolean;
+}
+
+interface HashtagData {
+  id: string;
+  name: string;
+  views: string;
+  videos: number;
+  growthRate: number;
+  category?: string | null;
+  isRising?: boolean;
+  viralScore?: number | null;
+}
+
+interface SoundData {
+  id: string;
+  title: string;
+  author?: string | null;
+  thumbnail?: string | null;
+  uses: number;
+  growthRate: number;
+  isViral?: boolean;
+  viralScore?: number | null;
+  trendingSince?: Date | null;
+}
+
 const mainTabs = [
   { id: "trends", label: "Trends", icon: Flame },
   { id: "creators", label: "Creators", icon: Users },
@@ -63,7 +97,7 @@ const categories = [
   "Entertainment",
 ];
 
-export default function ExploreContent({ initialData }: ExploreContentProps) {
+export default function ExploreContent() {
   const { selected: selectedCountry } = useCountry();
   const searchParams = useSearchParams();
   const tagFilter = searchParams.get("tag");
@@ -71,8 +105,12 @@ export default function ExploreContent({ initialData }: ExploreContentProps) {
   const [activeTab, setActiveTab] = useState("trends");
   const [searchQuery, setSearchQuery] = useState("");
   const [trends, setTrends] = useState<Trend[]>([]);
+  const [creators, setCreators] = useState<CreatorData[]>([]);
+  const [hashtags, setHashtags] = useState<HashtagData[]>([]);
+  const [sounds, setSounds] = useState<SoundData[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Fetch trends
   useEffect(() => {
     async function fetchTrends() {
       setLoading(true);
@@ -97,6 +135,72 @@ export default function ExploreContent({ initialData }: ExploreContentProps) {
       fetchTrends();
     }
   }, [selectedCountry.code, categoryFilter, activeTab]);
+
+  // Fetch creators
+  useEffect(() => {
+    async function fetchCreators() {
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/creators?country=${selectedCountry.code}&limit=50`);
+        const json = await res.json();
+        if (json.data) {
+          setCreators(json.data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch creators:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    if (activeTab === "creators") {
+      fetchCreators();
+    }
+  }, [selectedCountry.code, activeTab]);
+
+  // Fetch hashtags
+  useEffect(() => {
+    async function fetchHashtags() {
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/hashtags?country=${selectedCountry.code}&limit=50`);
+        const json = await res.json();
+        if (json.data) {
+          setHashtags(json.data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch hashtags:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    if (activeTab === "hashtags") {
+      fetchHashtags();
+    }
+  }, [selectedCountry.code, activeTab]);
+
+  // Fetch sounds
+  useEffect(() => {
+    async function fetchSounds() {
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/sounds?country=${selectedCountry.code}&limit=50`);
+        const json = await res.json();
+        if (json.data) {
+          setSounds(json.data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch sounds:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    if (activeTab === "sounds") {
+      fetchSounds();
+    }
+  }, [selectedCountry.code, activeTab]);
 
   const filteredTrends = trends.filter((t) => {
     if (tagFilter) {
@@ -277,12 +381,70 @@ export default function ExploreContent({ initialData }: ExploreContentProps) {
           </>
         )}
 
-        {activeTab !== "trends" && initialData && (
-          <ExploreTabs
-            creators={initialData.creators as { id: string; username: string; displayName: string; avatar?: string | null; followers: number; niche?: string | null; momentumScore?: number | null; isVerified?: boolean }[]}
-            hashtags={initialData.hashtags as { id: string; name: string; views: string; videos: number; growthRate: number; category?: string | null; isRising?: boolean; viralScore?: number | null }[]}
-            sounds={initialData.sounds as { id: string; title: string; author?: string | null; thumbnail?: string | null; uses: number; growthRate: number; isViral?: boolean; viralScore?: number | null; trendingSince?: Date | null }[]}
-          />
+        {activeTab === "creators" && (
+          <>
+            {loading ? (
+              <div className="min-h-[50vh] flex flex-col items-center justify-center gap-4">
+                <Loader2 className="w-8 h-8 text-tiktok-cyan animate-spin" />
+                <p className="text-white/60 text-sm">Loading creators...</p>
+              </div>
+            ) : creators.length > 0 ? (
+              <ExploreTabs
+                creators={creators}
+                hashtags={[]}
+                sounds={[]}
+                activeTab="creators"
+              />
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-white/40 text-sm">No creators found for {selectedCountry.name}.</p>
+              </div>
+            )}
+          </>
+        )}
+
+        {activeTab === "hashtags" && (
+          <>
+            {loading ? (
+              <div className="min-h-[50vh] flex flex-col items-center justify-center gap-4">
+                <Loader2 className="w-8 h-8 text-tiktok-cyan animate-spin" />
+                <p className="text-white/60 text-sm">Loading hashtags...</p>
+              </div>
+            ) : hashtags.length > 0 ? (
+              <ExploreTabs
+                creators={[]}
+                hashtags={hashtags}
+                sounds={[]}
+                activeTab="hashtags"
+              />
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-white/40 text-sm">No hashtags found for {selectedCountry.name}.</p>
+              </div>
+            )}
+          </>
+        )}
+
+        {activeTab === "sounds" && (
+          <>
+            {loading ? (
+              <div className="min-h-[50vh] flex flex-col items-center justify-center gap-4">
+                <Loader2 className="w-8 h-8 text-tiktok-cyan animate-spin" />
+                <p className="text-white/60 text-sm">Loading sounds...</p>
+              </div>
+            ) : sounds.length > 0 ? (
+              <ExploreTabs
+                creators={[]}
+                hashtags={[]}
+                sounds={sounds}
+                activeTab="sounds"
+              />
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-white/40 text-sm">No sounds found for {selectedCountry.name}.</p>
+              </div>
+            )}
+          </>
         )}
       </motion.div>
     </div>

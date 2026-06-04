@@ -44,6 +44,7 @@ interface ExploreTabsProps {
   creators: Creator[];
   hashtags: HashtagItem[];
   sounds: SoundItem[];
+  activeTab?: string;
 }
 
 const tabs = [
@@ -52,8 +53,10 @@ const tabs = [
   { id: "sounds", label: "Sounds", icon: Music },
 ];
 
-export function ExploreTabs({ creators, hashtags, sounds }: ExploreTabsProps) {
-  const [activeTab, setActiveTab] = useState("creators");
+export function ExploreTabs({ creators, hashtags, sounds, activeTab: controlledActiveTab }: ExploreTabsProps) {
+  const [internalActiveTab, setInternalActiveTab] = useState("creators");
+  const activeTab = controlledActiveTab ?? internalActiveTab;
+  const setActiveTab = controlledActiveTab ? () => {} : setInternalActiveTab;
 
   const formatNumber = (num: number) => {
     if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
