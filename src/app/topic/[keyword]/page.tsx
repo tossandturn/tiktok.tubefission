@@ -6,57 +6,11 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  TrendingUp, Search, Hash, Users, ArrowRight,
+  TrendingUp, Hash, ArrowRight,
   Flame, Sparkles, Target, BarChart3
 } from "lucide-react";
 
-// 30+ SEO keywords for TikTok
-export const SEO_KEYWORDS = [
-  // Viral Content
-  { keyword: "viral-tiktok-videos", title: "Viral TikTok Videos", category: "viral" },
-  { keyword: "tiktok-trending-now", title: "TikTok Trending Now", category: "trending" },
-  { keyword: "how-to-go-viral-on-tiktok", title: "How to Go Viral on TikTok", category: "guide" },
-  { keyword: "tiktok-viral-hacks", title: "TikTok Viral Hacks", category: "viral" },
-  { keyword: "tiktok-algorithm-tips", title: "TikTok Algorithm Tips", category: "guide" },
-
-  // Creator Growth
-  { keyword: "tiktok-creator-growth", title: "TikTok Creator Growth", category: "growth" },
-  { keyword: "tiktok-followers-guide", title: "TikTok Followers Guide", category: "growth" },
-  { keyword: "tiktok-engagement-tips", title: "TikTok Engagement Tips", category: "growth" },
-  { keyword: "tiktok-content-strategy", title: "TikTok Content Strategy", category: "strategy" },
-  { keyword: "tiktok-growth-hacks", title: "TikTok Growth Hacks", category: "growth" },
-
-  // Trends & Sounds
-  { keyword: "tiktok-trending-sounds", title: "TikTok Trending Sounds", category: "trends" },
-  { keyword: "tiktok-trending-hashtags", title: "TikTok Trending Hashtags", category: "trends" },
-  { keyword: "tiktok-challenge-trends", title: "TikTok Challenge Trends", category: "trends" },
-  { keyword: "tiktok-dance-trends", title: "TikTok Dance Trends", category: "trends" },
-  { keyword: "tiktok-music-trends", title: "TikTok Music Trends", category: "trends" },
-
-  // Analytics
-  { keyword: "tiktok-analytics-tools", title: "TikTok Analytics Tools", category: "analytics" },
-  { keyword: "tiktok-insights-guide", title: "TikTok Insights Guide", category: "analytics" },
-  { keyword: "tiktok-performance-metrics", title: "TikTok Performance Metrics", category: "analytics" },
-  { keyword: "tiktok-viral-score", title: "TikTok Viral Score", category: "analytics" },
-  { keyword: "tiktok-account-analysis", title: "TikTok Account Analysis", category: "analytics" },
-
-  // Marketing
-  { keyword: "tiktok-marketing-guide", title: "TikTok Marketing Guide", category: "marketing" },
-  { keyword: "tiktok-brand-promotion", title: "TikTok Brand Promotion", category: "marketing" },
-  { keyword: "tiktok-influencer-marketing", title: "TikTok Influencer Marketing", category: "marketing" },
-  { keyword: "tiktok-ad-strategy", title: "TikTok Ad Strategy", category: "marketing" },
-  { keyword: "tiktok-viral-marketing", title: "TikTok Viral Marketing", category: "marketing" },
-
-  // Niche Content
-  { keyword: "tiktok-food-trends", title: "TikTok Food Trends", category: "niche" },
-  { keyword: "tiktok-fashion-trends", title: "TikTok Fashion Trends", category: "niche" },
-  { keyword: "tiktok-beauty-trends", title: "TikTok Beauty Trends", category: "niche" },
-  { keyword: "tiktok-gaming-trends", title: "TikTok Gaming Trends", category: "niche" },
-  { keyword: "tiktok-fitness-trends", title: "TikTok Fitness Trends", category: "niche" },
-  { keyword: "tiktok-education-trends", title: "TikTok Education Trends", category: "niche" },
-  { keyword: "tiktok-comedy-trends", title: "TikTok Comedy Trends", category: "niche" },
-  { keyword: "tiktok-travel-trends", title: "TikTok Travel Trends", category: "niche" },
-];
+import { SEO_KEYWORDS } from "@/lib/seo-keywords";
 
 interface TopicPageProps {
   params: Promise<{ keyword: string }>;
