@@ -81,7 +81,8 @@ async function runVideoScrape(topN: number = 10, videosPerHashtag: number = 50) 
     const results = await batchScrapeHashtags(hashtagNames, videosPerHashtag);
 
     let totalVideos = 0;
-    for (const [hashtag, videos] of results) {
+    const resultsArray = Array.from(results.entries());
+    for (const [hashtag, videos] of resultsArray) {
       // 查找或创建对应的 Trend
       const trend = await prisma.trend.findFirst({
         where: { title: { contains: hashtag, mode: 'insensitive' } }
