@@ -321,7 +321,8 @@ async function runBulkHashtagScrape(country: string, limit: number = 100) {
   console.log(`[CRON] Starting bulk hashtag scrape for ${country} (limit: ${limit})...`);
 
   try {
-    const hashtags = await scrapeHashtagList(limit);
+    // Pass country parameter to scrapeHashtagList
+    const hashtags = await scrapeHashtagList(limit, country);
     let successCount = 0;
 
     for (const h of hashtags) {
@@ -367,7 +368,8 @@ async function runVideoScrape(country: string, topN: number = 10, videosPerHasht
     });
 
     const hashtagNames = hashtags.map(h => h.name);
-    const results = await batchScrapeHashtags(hashtagNames, videosPerHashtag);
+    // Pass country parameter to batchScrapeHashtags
+    const results = await batchScrapeHashtags(hashtagNames, videosPerHashtag, country);
 
     let totalVideos = 0;
     const resultsArray = Array.from(results.entries());

@@ -12,7 +12,7 @@
  */
 
 import { prisma } from "../src/lib/db";
-import { scrapeDiscover, scrapeHashtag, scrapeHashtagVideos, closeBrowser } from "../src/lib/scraper";
+import { scrapeHashtagList, scrapeHashtag, scrapeHashtagVideos, closeBrowser } from "../src/lib/scraper-enhanced";
 
 interface ScrapeContext {
   country: string;
@@ -422,8 +422,8 @@ async function runDiscoverScrape(country: string) {
   console.log(`[SCRAPE] Starting discover scrape for ${country}...`);
 
   try {
-    // Scrape more hashtags (100 instead of 30)
-    const hashtags = await scrapeDiscover(100);
+    // Use scrapeHashtagList with country parameter
+    const hashtags = await scrapeHashtagList(100, country);
 
     for (const h of hashtags) {
       await saveHashtagAndSnapshot(
@@ -451,11 +451,13 @@ async function runHashtagDeepDive(hashtagNames: string[], country: string) {
   // Process more hashtags (10 instead of 5)
   for (const name of hashtagNames.slice(0, 10)) {
     try {
-      const trend = await scrapeHashtag(name);
+      // Pass country parameter
+      const trend = await scrapeHashtag(name, country);
       if (!trend) continue;
 
       // Scrape more videos per hashtag (20 instead of 10)
-      const videos = await scrapeHashtagVideos(name, 20);
+      // Pass country parameter
+      const videos = await scrapeHashtagVideos(name, 20, country);
       const slug = trend.hashtag.replace("#", "").toLowerCase().replace(/[^a-z0-9]+/g, "-");
 
       // Upsert trend
