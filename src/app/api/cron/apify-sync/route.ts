@@ -117,7 +117,7 @@ export async function GET(request: NextRequest) {
         if (!data.author) continue;
 
         // Save creator
-        const creator = await prisma.creator.upsert({
+        await prisma.creator.upsert({
           where: { username: data.author.username },
           create: {
             id: data.author.id || `creator_${Date.now()}`,
