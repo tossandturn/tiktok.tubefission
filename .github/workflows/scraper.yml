@@ -86,6 +86,32 @@ jobs:
           echo ""
           echo "PrimeApi JP sync completed"
 
+      - name: Sync Apify TikTok Data (US - Hashtags)
+        if: github.event_name == 'schedule' || inputs.mode == 'full'
+        run: |
+          echo "Syncing Apify TikTok data for US..."
+          curl -s -X GET "https://tiktok.tubefission.com/api/cron/apify-sync?key=${{ secrets.CRON_SECRET_KEY }}&country=US&mode=hashtags&limit=50" \
+            -H "User-Agent: GitHub-Actions-Scraper/1.0" \
+            --max-time 600 \
+            -o apify_us.json \
+            -w "HTTP Status: %{http_code}\n"
+          cat apify_us.json
+          echo ""
+          echo "Apify US sync completed"
+
+      - name: Sync Apify TikTok Data (JP - Hashtags)
+        if: github.event_name == 'schedule' || inputs.mode == 'full'
+        run: |
+          echo "Syncing Apify TikTok data for JP..."
+          curl -s -X GET "https://tiktok.tubefission.com/api/cron/apify-sync?key=${{ secrets.CRON_SECRET_KEY }}&country=JP&mode=hashtags&limit=30" \
+            -H "User-Agent: GitHub-Actions-Scraper/1.0" \
+            --max-time 600 \
+            -o apify_jp.json \
+            -w "HTTP Status: %{http_code}\n"
+          cat apify_jp.json
+          echo ""
+          echo "Apify JP sync completed"
+
       - name: Upload response logs
         if: always()
         uses: actions/upload-artifact@v4
