@@ -16,7 +16,7 @@ interface HashtagPageProps {
 export async function generateMetadata({ params }: HashtagPageProps): Promise<Metadata> {
   const { name } = await params;
   const decodedName = decodeURIComponent(name);
-  const hashtag = await prisma.hashtag.findUnique({
+  const hashtag = await prisma.hashtag.findFirst({
     where: { name: decodedName },
     select: {
       name: true,
@@ -54,7 +54,9 @@ export async function generateMetadata({ params }: HashtagPageProps): Promise<Me
       "hashtag strategy",
       "content trends",
     ],
-    canonical: `https://tiktok.tubefission.com/hashtag/${encodeURIComponent(hashtag.name)}`,
+    alternates: {
+      canonical: `https://tiktok.tubefission.com/hashtag/${encodeURIComponent(hashtag.name)}`,
+    },
     openGraph: {
       title: `#${hashtag.name} - TikTok Hashtag Analytics`,
       description,
@@ -88,7 +90,7 @@ export default async function HashtagPage({ params }: HashtagPageProps) {
   const { name } = await params;
   const decodedName = decodeURIComponent(name);
 
-  const hashtag = await prisma.hashtag.findUnique({
+  const hashtag = await prisma.hashtag.findFirst({
     where: { name: decodedName },
   });
 
@@ -183,7 +185,6 @@ export default async function HashtagPage({ params }: HashtagPageProps) {
       <RelatedContent
         hashtags={relatedHashtags}
         creators={topCreators}
-        currentType="hashtag"
         currentName={`#${hashtag.name}`}
       />
     </div>

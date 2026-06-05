@@ -53,7 +53,9 @@ export async function generateMetadata({ params }: CreatorPageProps): Promise<Me
       "engagement rate",
       "growth analysis",
     ],
-    canonical: `https://tiktok.tubefission.com/creator/${username}`,
+    alternates: {
+      canonical: `https://tiktok.tubefission.com/creator/${username}`,
+    },
     openGraph: {
       title: `${creator.displayName} - TikTok Creator Analytics`,
       description,
@@ -151,7 +153,7 @@ export default async function CreatorPage({ params }: CreatorPageProps) {
     creator.displayName,
     creator.followers,
     creator.likes,
-    creator.avatar
+    creator.avatar || undefined
   );
 
   const breadcrumbSchema = generateBreadcrumbSchema([
@@ -191,7 +193,6 @@ export default async function CreatorPage({ params }: CreatorPageProps) {
       <RelatedContent
         creators={relatedCreators}
         hashtags={relatedHashtags}
-        currentType="creator"
         currentName={creator.displayName}
       />
     </div>

@@ -6,10 +6,6 @@
     {
       "path": "/api/cron/scrape?key=${CRON_SECRET_KEY}&mode=full",
       "schedule": "0 2 * * *"
-    },
-    {
-      "path": "/api/cron/scrape?key=${CRON_SECRET_KEY}&mode=scores&country=US",
-      "schedule": "0 */6 * * *"
     }
   ]
 }

@@ -33,8 +33,8 @@ export function LoginDiagnostics() {
       } else {
         setError(`❌ Login failed (${response.status}): ${data.error || "Unknown error"}`);
       }
-    } catch (err: any) {
-      setError(`❌ Network error: ${err.message}`);
+    } catch (err: Error | unknown) {
+      setError(`❌ Network error: ${err instanceof Error ? err.message : "Unknown error"}`);
       console.error("Login test error:", err);
     } finally {
       setLoading(false);

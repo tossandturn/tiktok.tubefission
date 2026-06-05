@@ -31,7 +31,6 @@ interface RelatedContentProps {
   creators?: Creator[];
   hashtags?: Hashtag[];
   videos?: Video[];
-  currentType: "creator" | "video" | "hashtag" | "trend";
   currentName: string;
 }
 
@@ -39,7 +38,6 @@ export function RelatedContent({
   creators = [],
   hashtags = [],
   videos = [],
-  currentType,
   currentName,
 }: RelatedContentProps) {
   const hasContent = creators.length > 0 || hashtags.length > 0 || videos.length > 0;

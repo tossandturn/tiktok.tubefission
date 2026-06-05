@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Metadata } from "next";
 import { useCountry } from "@/components/country-context";
 import { ViralPredictionEngine } from "@/components/viral-prediction";
 import { MomentumDashboard } from "@/components/momentum-dashboard";

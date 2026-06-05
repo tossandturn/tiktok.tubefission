@@ -36,14 +36,6 @@ interface Trend {
   tags: { tag: { name: string } }[];
 }
 
-interface ExploreContentProps {
-  initialData?: {
-    creators: Array<Record<string, unknown>>;
-    hashtags: Array<Record<string, unknown>>;
-    sounds: Array<Record<string, unknown>>;
-  };
-}
-
 interface CreatorData {
   id: string;
   username: string;

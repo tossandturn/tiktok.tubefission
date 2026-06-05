@@ -368,8 +368,7 @@ async function runVideoScrape(country: string, topN: number = 10, videosPerHasht
     });
 
     const hashtagNames = hashtags.map(h => h.name);
-    // Pass country parameter to batchScrapeHashtags
-    const results = await batchScrapeHashtags(hashtagNames, videosPerHashtag, country);
+    const results = await batchScrapeHashtags(hashtagNames, videosPerHashtag);
 
     let totalVideos = 0;
     const resultsArray = Array.from(results.entries());

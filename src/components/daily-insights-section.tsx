@@ -50,8 +50,17 @@ export function DailyInsightsSection({ defaultCountry = "US" }: DailyInsightsSec
         const data = await response.json();
 
         if (data.success) {
-          // Transform hashtag data for word cloud
-          const wordCloud: WordCloudData[] = data.hashtags.map((h: any) => ({
+          interface HashtagData {
+  name: string;
+  viralScore?: number;
+  isRising?: boolean;
+  growthRate: number;
+  views: string;
+  category?: string;
+}
+
+// Transform hashtag data for word cloud
+const wordCloud: WordCloudData[] = data.hashtags.map((h: HashtagData) => ({
             name: h.name,
             weight: Math.min(Math.floor((h.viralScore || 50) / 10), 10) + 1,
             viralScore: h.viralScore || 50,
@@ -60,9 +69,9 @@ export function DailyInsightsSection({ defaultCountry = "US" }: DailyInsightsSec
 
           // Transform for booming keywords (sorted by growth rate)
           const booming: BoomingKeywordData[] = data.hashtags
-            .sort((a: any, b: any) => b.growthRate - a.growthRate)
+            .sort((a: HashtagData, b: HashtagData) => b.growthRate - a.growthRate)
             .slice(0, 10)
-            .map((h: any, index: number) => ({
+            .map((h: HashtagData, index: number) => ({
               name: h.name,
               growthRate: h.growthRate,
               views: h.views,
@@ -75,7 +84,7 @@ export function DailyInsightsSection({ defaultCountry = "US" }: DailyInsightsSec
         } else {
           setError(data.error || "Failed to load data");
         }
-      } catch (err) {
+      } catch {
         setError("Network error");
       } finally {
         setLoading(false);

@@ -38,7 +38,9 @@ export function generateMetadata(config: SEOConfig): Metadata {
     description,
     keywords,
     authors: author ? [{ name: author }] : undefined,
-    canonical: canonical || `${BASE_URL}`,
+    alternates: {
+      canonical: canonical || `${BASE_URL}`,
+    },
     openGraph: {
       title: fullTitle,
       description,
