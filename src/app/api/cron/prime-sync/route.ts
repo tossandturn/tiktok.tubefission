@@ -65,12 +65,13 @@ export async function GET(request: NextRequest) {
         type: "primeapi_hashtags",
         status: "success",
         count: syncResults.success,
-        details: JSON.stringify({
+        error: null,
+        metadata: {
           country,
           total: result.data.length,
           failed: syncResults.failed,
           balance: balance.remaining
-        }),
+        },
       },
     });
 
@@ -94,7 +95,9 @@ export async function GET(request: NextRequest) {
       data: {
         type: "primeapi_hashtags",
         status: "error",
-        details: JSON.stringify({ error: String(error), country }),
+        count: 0,
+        error: String(error),
+        metadata: { country },
       },
     });
 
