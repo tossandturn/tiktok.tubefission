@@ -8,6 +8,7 @@ export async function GET(request: Request) {
   const country = searchParams.get("country");
   const niche = searchParams.get("niche");
   const verified = searchParams.get("verified");
+  const rising = searchParams.get("rising");
   const limit = Math.min(parseInt(searchParams.get("limit") ?? "20"), 100);
   const offset = parseInt(searchParams.get("offset") ?? "0");
 
@@ -19,7 +20,7 @@ export async function GET(request: Request) {
   const [creators, total] = await Promise.all([
     prisma.creator.findMany({
       where,
-      orderBy: [{ momentumScore: "desc" }, { followers: "desc" }],
+      orderBy: rising === "true" ? [{ predictedGrowth7d: "desc" }, { momentumScore: "desc" }] : [{ momentumScore: "desc" }, { followers: "desc" }],
       take: limit,
       skip: offset,
       select: {
@@ -30,6 +31,7 @@ export async function GET(request: Request) {
         followers: true,
         niche: true,
         momentumScore: true,
+        predictedGrowth7d: true,
         isVerified: true,
       },
     }),

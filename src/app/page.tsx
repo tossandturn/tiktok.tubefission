@@ -1,6 +1,7 @@
 "use client";
 
 import { SaaSHero } from "@/components/saas-hero";
+import { YouMayMiss } from "@/components/you-may-miss";
 import { SocialProof } from "@/components/social-proof";
 import { DashboardPreview } from "@/components/dashboard-preview";
 import { UseCases } from "@/components/use-cases";
@@ -18,6 +19,9 @@ export default function HomePage() {
     <div className="min-h-screen bg-black">
       {/* 1. Hero Section */}
       <SaaSHero />
+
+      {/* You May Miss - Today's Missed Opportunities */}
+      <YouMayMiss />
 
       {/* Ad Banner after Hero */}
       <div className="max-w-6xl mx-auto px-4">

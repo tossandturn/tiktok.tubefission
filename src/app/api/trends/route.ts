@@ -9,6 +9,7 @@ export async function GET(request: Request) {
   const viral = searchParams.get("viral");
   const isNew = searchParams.get("new");
   const country = searchParams.get("country");
+  const rising = searchParams.get("rising");
   const limit = Math.min(parseInt(searchParams.get("limit") ?? "20"), 100);
   const offset = parseInt(searchParams.get("offset") ?? "0");
 
@@ -17,12 +18,15 @@ export async function GET(request: Request) {
   if (viral === "true") where.isViral = true;
   if (isNew === "true") where.isNew = true;
   if (country) where.country = country.toUpperCase();
+  if (rising === "true") {
+    where.growthRate = { gt: 0 };
+  }
 
   const [trends, total] = await Promise.all([
     prisma.trend.findMany({
       where,
       include: { tags: { include: { tag: true } } },
-      orderBy: [{ aiScore: "desc" }, { growthRate: "desc" }],
+      orderBy: rising === "true" ? [{ growthRate: "desc" }, { aiScore: "desc" }] : [{ aiScore: "desc" }, { growthRate: "desc" }],
       take: limit,
       skip: offset,
     }),
