@@ -200,7 +200,12 @@ export async function syncHashtagData(
 
   try {
     await prisma.hashtag.upsert({
-      where: { name: hashtag.name },
+      where: {
+        name_country: {
+          name: hashtag.name,
+          country,
+        },
+      },
       create: {
         name: hashtag.name,
         country,
