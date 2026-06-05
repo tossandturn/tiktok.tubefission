@@ -38,7 +38,6 @@ export async function GET(request: NextRequest) {
       }, { status: 429 });
     }
 
-    let runId: string;
     let scraperConfig: { hashtags?: string[]; profiles?: string[]; searchQueries?: string[] };
 
     // Define scrape targets by country
@@ -95,7 +94,7 @@ export async function GET(request: NextRequest) {
       proxy: "residential",
     });
 
-    runId = run.runId;
+    const runId = run.runId;
 
     // Wait for completion (max 5 minutes)
     await waitForRunCompletion(runId, 5);
