@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { Compass, TrendingUp, Zap, Menu, X, BarChart3, User, Bookmark } from "lucide-react";
+import { Compass, TrendingUp, Zap, Menu, X, BarChart3, User, Bookmark, Search } from "lucide-react";
 import { useCountry, countries } from "./country-context";
 import { useSession } from "./session-provider";
 import { AuthModal } from "./auth-modal";
@@ -11,6 +11,7 @@ import { AuthModal } from "./auth-modal";
 const navItems = [
   { href: "/", label: "Feed", icon: Zap },
   { href: "/explore", label: "Explore", icon: Compass },
+  { href: "/niche-finder", label: "Niche Finder", icon: Search },
   { href: "/trending", label: "Trending", icon: TrendingUp },
   { href: "/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/watchlist", label: "Watchlist", icon: Bookmark },

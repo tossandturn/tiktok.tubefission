@@ -23,6 +23,8 @@ interface ApifyDatasetItem {
   id: string;
   text?: string;
   desc?: string;
+  url?: string;
+  webVideoUrl?: string;
   createTime?: string;
   stats?: {
     diggCount?: number;

@@ -1,11 +1,43 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Play, ArrowRight, Sparkles } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Play, ArrowRight, Sparkles, Video, Loader2 } from "lucide-react";
 import Link from "next/link";
 
 export function SaaSHero() {
+  const [url, setUrl] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleAnalyze = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!url.trim()) return;
+
+    setLoading(true);
+    try {
+      const response = await fetch("/api/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: url.trim() }),
+      });
+
+      const data = await response.json();
+
+      if (data.video?.id) {
+        window.location.href = `/video/${data.video.id}`;
+      } else {
+        window.location.href = `/analyze?url=${encodeURIComponent(url)}`;
+      }
+    } catch (error) {
+      console.error("Analysis failed:", error);
+      window.location.href = `/analyze?url=${encodeURIComponent(url)}`;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <section className="relative min-h-[90vh] flex flex-col items-center justify-center px-4 overflow-hidden">
       {/* Animated gradient background */}
@@ -61,37 +93,67 @@ export function SaaSHero() {
           Get 7-day advance warning on viral trends and 3x your engagement.
         </motion.p>
 
+        {/* URL Input Form */}
+        <motion.form
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          onSubmit={handleAnalyze}
+          className="relative max-w-2xl mx-auto mb-8"
+        >
+          <div className="relative flex items-center">
+            <div className="absolute left-4 text-white/40">
+              <Video className="w-5 h-5" />
+            </div>
+            <Input
+              type="url"
+              placeholder="Paste TikTok video URL to analyze..."
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              className="w-full pl-12 pr-32 py-6 text-base bg-white/5 border-white/10 text-white placeholder:text-white/40 rounded-full focus:border-tiktok-cyan focus:ring-tiktok-cyan/20"
+              disabled={loading}
+            />
+            <Button
+              type="submit"
+              disabled={loading || !url.trim()}
+              className="absolute right-2 bg-gradient-to-r from-tiktok-cyan to-tiktok-cyan/80 hover:from-tiktok-cyan/90 hover:to-tiktok-cyan/70 text-black font-semibold px-6 py-3 rounded-full"
+            >
+              {loading ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <>
+                  Analyze
+                  <ArrowRight className="ml-2 w-4 h-4" />
+                </>
+              )}
+            </Button>
+          </div>
+        </motion.form>
+
         {/* CTAs */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
           className="flex flex-col sm:flex-row items-center justify-center gap-4"
         >
           <Link href="/explore">
             <Button
               size="lg"
-              className="bg-gradient-to-r from-tiktok-cyan to-tiktok-cyan/80 hover:from-tiktok-cyan/90 hover:to-tiktok-cyan/70 text-black font-semibold px-8 py-6 text-lg rounded-full group"
+              variant="outline"
+              className="border-white/20 text-white hover:bg-white/10 px-8 py-6 text-lg rounded-full group"
             >
-              Start Free Analysis
-              <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              <Play className="mr-2 w-5 h-5" />
+              Watch Demo
             </Button>
           </Link>
-          <Button
-            size="lg"
-            variant="outline"
-            className="border-white/20 text-white hover:bg-white/10 px-8 py-6 text-lg rounded-full group"
-          >
-            <Play className="mr-2 w-5 h-5" />
-            Watch Demo
-          </Button>
         </motion.div>
 
         {/* Trust badges */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.5 }}
+          transition={{ duration: 0.5, delay: 0.6 }}
           className="mt-16 flex flex-wrap items-center justify-center gap-8 text-white/40 text-sm"
         >
           <div className="flex items-center gap-2">

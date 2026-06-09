@@ -6,6 +6,7 @@ import { NavBar } from "@/components/nav-bar";
 import { StructuredData } from "@/components/structured-data";
 import { CountryProvider } from "@/components/country-context";
 import { SessionProvider } from "@/components/session-provider";
+import TikTokAnalyzerBar from "@/components/tiktok-analyzer-bar";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -123,6 +124,7 @@ export default function RootLayout({
         <SessionProvider>
           <CountryProvider>
             <NavBar />
+            <TikTokAnalyzerBar />
             <main className="pt-14">{children}</main>
           </CountryProvider>
         </SessionProvider>
