@@ -20,10 +20,30 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
-  const trend = await prisma.trend.findUnique({
-    where: { slug: id },
-    include: { tags: { include: { tag: true } } },
-  });
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let trend: any = null;
+  try {
+    trend = await prisma.trend.findUnique({
+      where: { slug: id },
+      include: { tags: { include: { tag: true } } },
+    });
+  } catch {
+    // Database unavailable — try static data
+    const staticTrend = staticTrends.find((t) => t.id === id);
+    if (staticTrend) {
+      return {
+        title: staticTrend.title,
+        description: staticTrend.description,
+        openGraph: {
+          title: `${staticTrend.title} | TikTok Intelligence`,
+          description: staticTrend.description,
+          images: [{ url: staticTrend.thumbnail || "/placeholder-trend.png", width: 600, height: 800, alt: staticTrend.title }],
+        },
+      };
+    }
+    return {};
+  }
 
   if (!trend) return {};
 
@@ -48,11 +68,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export async function generateStaticParams() {
-  // Get slugs from database
-  const dbTrends = await prisma.trend.findMany({
-    select: { slug: true },
-    take: 50,
-  });
+  // Get slugs from database, fallback to static only
+  let dbTrends: { slug: string }[] = [];
+  try {
+    dbTrends = await prisma.trend.findMany({
+      select: { slug: true },
+      take: 50,
+    });
+  } catch {
+    // Database unavailable — use static data only
+  }
 
   // Combine with static data trend ids
   const allIds = [
@@ -73,10 +98,15 @@ export default async function TrendPage({ params }: Props) {
 
   // Try database first
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let trend: any = await prisma.trend.findUnique({
-    where: { slug: id },
-    include: { tags: { include: { tag: true } } },
-  });
+  let trend: any = null;
+  try {
+    trend = await prisma.trend.findUnique({
+      where: { slug: id },
+      include: { tags: { include: { tag: true } } },
+    });
+  } catch {
+    // Database unavailable — will try static data below
+  }
 
   let tags: string[] = [];
   let source: "db" | "static" = "db";
@@ -125,8 +155,11 @@ export default async function TrendPage({ params }: Props) {
   if (!trend) notFound();
 
   // Get related trends from same category
-  const relatedTrends = source === "db"
-    ? await prisma.trend.findMany({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let relatedTrends: any[] = [];
+  if (source === "db") {
+    try {
+      relatedTrends = await prisma.trend.findMany({
         where: {
           category: trend.category,
           slug: { not: id },
@@ -134,8 +167,11 @@ export default async function TrendPage({ params }: Props) {
         include: { tags: { include: { tag: true } } },
         take: 3,
         orderBy: { viralScore: "desc" },
-      })
-    : [];
+      });
+    } catch {
+      // Database unavailable — no related trends
+    }
+  }
 
   const articleData = {
     headline: trend.title,

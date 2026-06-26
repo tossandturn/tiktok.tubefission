@@ -38,7 +38,7 @@ function parseTikTokUrl(url: string): { videoId?: string; username?: string; ful
  */
 async function fetchViaProxy(url: string): Promise<{
   success: boolean;
-  data?: any;
+  data?: Record<string, unknown>;
   error?: string;
 }> {
   try {
@@ -158,12 +158,12 @@ export async function POST(request: NextRequest) {
     // If URL has username, fetch real data
     if (parsed.username && parsed.videoId) {
       try {
+        let videoData: Record<string, unknown>;
+        let source = "proxy";
+
         // Try Openclaw proxy first
         console.log("Trying Openclaw proxy...");
         const proxyResult = await fetchViaProxy(url);
-
-        let videoData: any;
-        let source = "proxy";
 
         if (proxyResult.success && proxyResult.data) {
           console.log("Proxy success, using proxy data");
@@ -171,23 +171,45 @@ export async function POST(request: NextRequest) {
         } else {
           // Fallback to direct yt-dlp
           console.log("Proxy failed, falling back to yt-dlp:", proxyResult.error);
-          videoData = await fetchTikTokData(url);
+          const ytData = await fetchTikTokData(url);
+
+          // Check if yt-dlp returned valid data
+          if (!ytData.id) {
+            return NextResponse.json({
+              success: false,
+              error: "Unable to fetch video data. The video may be private, unavailable, or yt-dlp is not installed.",
+            }, { status: 404 });
+          }
+
+          // Convert yt-dlp format to unified format
+          videoData = {
+            id: ytData.id,
+            title: ytData.title,
+            description: ytData.description,
+            thumbnail: ytData.thumbnail,
+            view_count: ytData.view_count,
+            like_count: ytData.like_count,
+            comment_count: ytData.comment_count,
+            repost_count: ytData.repost_count,
+            uploader: ytData.uploader,
+            uploader_id: ytData.uploader_id,
+            upload_date: ytData.upload_date,
+          };
           source = "yt-dlp";
         }
 
-        // Handle proxy response format vs yt-dlp format
+        // Handle unified video data format
         const id = videoData.id || videoData.videoId || parsed.videoId;
-        const title = videoData.title || videoData.description?.split('\n')[0] || "TikTok Video";
-        const description = videoData.description || "";
-        const thumbnail = videoData.thumbnail || videoData.coverUrl || "";
-        const duration = videoData.duration || 0;
-        const view_count = videoData.view_count || videoData.views || videoData.playCount || 0;
-        const like_count = videoData.like_count || videoData.likes || videoData.diggCount || 0;
-        const comment_count = videoData.comment_count || videoData.comments || videoData.commentCount || 0;
-        const repost_count = videoData.repost_count || videoData.shares || videoData.shareCount || 0;
-        const uploader = videoData.uploader || videoData.author?.nickname || parsed.username;
-        const uploader_id = videoData.uploader_id || videoData.author?.id || "";
-        const upload_date = videoData.upload_date || videoData.createTime || "";
+        const description = String(videoData.description || "");
+        const title = String(videoData.title || description?.split('\n')[0] || "TikTok Video");
+        const thumbnail = String(videoData.thumbnail || videoData.coverUrl || "");
+        const view_count = Number(videoData.view_count || videoData.views || videoData.playCount || 0);
+        const like_count = Number(videoData.like_count || videoData.likes || videoData.diggCount || 0);
+        const comment_count = Number(videoData.comment_count || videoData.comments || videoData.commentCount || 0);
+        const repost_count = Number(videoData.repost_count || videoData.shares || videoData.shareCount || 0);
+        const uploader = String(videoData.uploader || (videoData.author as Record<string, unknown>)?.nickname || parsed.username || "");
+        const uploader_id = String(videoData.uploader_id || (videoData.author as Record<string, unknown>)?.id || "");
+        const upload_date = String(videoData.upload_date || videoData.createTime || "");
 
         if (!id) {
           return NextResponse.json({

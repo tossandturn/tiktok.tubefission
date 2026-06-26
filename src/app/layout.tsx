@@ -113,10 +113,10 @@ export default function RootLayout({
         <StructuredData type="product" />
         <script
           async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6772936350717773"
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2329966945529740"
           crossOrigin="anonymous"
         />
-        <meta name="google-adsense-account" content="ca-pub-6772936350717773" />
+        <meta name="google-adsense-account" content="ca-pub-2329966945529740" />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-black text-white min-h-screen`}
