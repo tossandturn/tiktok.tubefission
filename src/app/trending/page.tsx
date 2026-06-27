@@ -3,7 +3,7 @@
 import { useMemo, useState, useEffect } from "react";
 import { TrendCard } from "@/components/trend-card";
 import { useCountry } from "@/components/country-context";
-import { Flame, ArrowUpRight, Loader2 } from "lucide-react";
+import { Flame, ArrowUpRight, Loader2, ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { trends as staticTrends } from "@/lib/data";
 
@@ -38,6 +38,7 @@ export default function TrendingPage() {
   const { selected: selectedCountry } = useCountry();
   const [trends, setTrends] = useState<Trend[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sortBy, setSortBy] = useState<"viralScore" | "opportunityScore" | "growthRate" | "velocity">("viralScore");
 
   useEffect(() => {
     async function fetchTrends() {
@@ -73,22 +74,22 @@ export default function TrendingPage() {
   const viralTrends = useMemo(() =>
     [...trends]
       .filter((t) => t.isViral)
-      .sort((a, b) => (b.viralScore || 0) - (a.viralScore || 0)),
-    [trends]
+      .sort((a, b) => (b[sortBy] || 0) - (a[sortBy] || 0)),
+    [trends, sortBy]
   );
 
   const newTrends = useMemo(() =>
     [...trends]
       .filter((t) => t.isNew)
-      .sort((a, b) => (b.opportunityScore || 0) - (a.opportunityScore || 0)),
-    [trends]
+      .sort((a, b) => (b[sortBy] || 0) - (a[sortBy] || 0)),
+    [trends, sortBy]
   );
 
   const topOpportunities = useMemo(() =>
     [...trends]
-      .sort((a, b) => (b.opportunityScore || 0) - (a.opportunityScore || 0))
+      .sort((a, b) => (b[sortBy] || 0) - (a[sortBy] || 0))
       .slice(0, 10),
-    [trends]
+    [trends, sortBy]
   );
 
   if (loading) {
@@ -104,13 +105,31 @@ export default function TrendingPage() {
     <div className="max-w-lg mx-auto px-4 pt-6 pb-12">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-          <Flame className="w-6 h-6 text-tiktok-red" />
-          Trending Now
-        </h1>
-        <p className="text-sm text-white/40 mt-1">
-          {selectedCountry.flag} {selectedCountry.name} — {trends.length} signals
-        </p>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+              <Flame className="w-6 h-6 text-tiktok-red" />
+              Trending Now
+            </h1>
+            <p className="text-sm text-white/40 mt-1">
+              {selectedCountry.flag} {selectedCountry.name} — {trends.length} signals
+            </p>
+          </div>
+          {/* Sort dropdown */}
+          <div className="relative">
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+              className="appearance-none bg-white/5 border border-white/10 text-white text-sm px-3 py-2 pr-8 rounded-lg focus:outline-none focus:border-tiktok-cyan cursor-pointer"
+            >
+              <option value="viralScore">Sort by Viral Score</option>
+              <option value="opportunityScore">Sort by Opportunity</option>
+              <option value="growthRate">Sort by Growth Rate</option>
+              <option value="velocity">Sort by Velocity</option>
+            </select>
+            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
+          </div>
+        </div>
       </div>
 
       {/* Today's Keyword */}
