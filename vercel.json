@@ -6,6 +6,14 @@
     {
       "path": "/api/cron/scrape?key=${CRON_SECRET_KEY}&mode=full",
       "schedule": "0 2 * * *"
+    },
+    {
+      "path": "/api/cron/daily-sync?key=${CRON_SECRET_KEY}&country=US",
+      "schedule": "0 4 * * *"
+    },
+    {
+      "path": "/api/cron/apify-sync?key=${CRON_SECRET_KEY}&country=US",
+      "schedule": "0 6 * * *"
     }
   ]
 }
