@@ -7,7 +7,8 @@ const execAsync = promisify(exec);
 
 const APIFY_API_TOKEN = process.env.APIFY_API_TOKEN || "";
 const APIFY_BASE_URL = "https://api.apify.com/v2";
-const TIKTOK_SCRAPER_ACTOR = process.env.APIFY_TIKTOK_SCRAPER_ACTOR || "curious_coder/tiktok-scraper";
+// Apify actor IDs use ~ separator, not /
+const TIKTOK_SCRAPER_ACTOR = (process.env.APIFY_TIKTOK_SCRAPER_ACTOR || "curious_coder/tiktok-scraper").replace("/", "~");
 
 /**
  * Parse TikTok URL to extract video ID and username
@@ -38,38 +39,41 @@ async function fetchViaYtDlp(url: string): Promise<{
   data?: Record<string, unknown>;
   error?: string;
 }> {
-  try {
-    const { stdout } = await execAsync(
-      `yt-dlp --dump-json --no-download "${url}" 2>/dev/null || echo "{}"`,
-      { timeout: 30000 }
-    );
+  // Try without proxy first, then with proxy if available
+  const proxyUrl = process.env.YT_DLP_PROXY || "";
+  const attempts = proxyUrl
+    ? [`yt-dlp --dump-json --no-download "${url}" 2>/dev/null`, `yt-dlp --dump-json --no-download --proxy "${proxyUrl}" "${url}" 2>/dev/null`]
+    : [`yt-dlp --dump-json --no-download "${url}" 2>/dev/null`];
 
-    const data = JSON.parse(stdout);
+  for (const cmd of attempts) {
+    try {
+      const { stdout } = await execAsync(`${cmd} || echo "{}"`, { timeout: 30000 });
+      const data = JSON.parse(stdout);
 
-    if (!data.id) {
-      return { success: false, error: "yt-dlp returned no data" };
+      if (!data.id) continue;
+
+      return {
+        success: true,
+        data: {
+          id: data.id,
+          title: data.title,
+          description: data.description,
+          thumbnail: data.thumbnail,
+          view_count: data.view_count,
+          like_count: data.like_count,
+          comment_count: data.comment_count,
+          repost_count: data.repost_count,
+          uploader: data.uploader,
+          uploader_id: data.uploader_id,
+          upload_date: data.upload_date,
+        },
+      };
+    } catch (error) {
+      console.error("yt-dlp error:", error);
     }
-
-    return {
-      success: true,
-      data: {
-        id: data.id,
-        title: data.title,
-        description: data.description,
-        thumbnail: data.thumbnail,
-        view_count: data.view_count,
-        like_count: data.like_count,
-        comment_count: data.comment_count,
-        repost_count: data.repost_count,
-        uploader: data.uploader,
-        uploader_id: data.uploader_id,
-        upload_date: data.upload_date,
-      },
-    };
-  } catch (error) {
-    console.error("yt-dlp error:", error);
-    return { success: false, error: String(error) };
   }
+
+  return { success: false, error: "yt-dlp failed for all attempts" };
 }
 
 /**
