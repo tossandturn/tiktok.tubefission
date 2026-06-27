@@ -4,13 +4,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, TrendingUp, Eye, Users, Clock, Share2, Bookmark, Flame, Sparkles, BarChart3, Target, Zap, Globe } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { AdSlot } from "@/components/ad-slot";
 import { FloatingTags } from "@/components/floating-tags";
 import { StructuredData } from "@/components/structured-data";
 import { TikTokEmbed } from "@/components/tiktok-embed";
 import { RefreshIndicator } from "@/components/refresh-indicator";
 import { TrendHistoryChart } from "@/components/trend-history-chart";
+import { TrendActions } from "@/components/trend-actions";
 import { prisma } from "@/lib/prisma";
 import { trends as staticTrends } from "@/lib/data";
 
@@ -326,22 +326,7 @@ export default async function TrendPage({ params }: Props) {
       </div>
 
       {/* Actions */}
-      <div className="px-4 py-3 flex gap-2">
-        <Button
-          variant="outline"
-          className="flex-1 bg-white/5 border-white/10 text-white hover:bg-white/10 hover:text-white"
-        >
-          <Share2 className="w-4 h-4 mr-2" />
-          Share
-        </Button>
-        <Button
-          variant="outline"
-          className="flex-1 bg-white/5 border-white/10 text-white hover:bg-white/10 hover:text-white"
-        >
-          <Bookmark className="w-4 h-4 mr-2" />
-          Save
-        </Button>
-      </div>
+      <TrendActions trendId={id} trendTitle={trend.title} />
 
       {/* Description */}
       <div className="px-4 py-4">
