@@ -8,14 +8,16 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const country = searchParams.get("country") || "US";
     const limit = parseInt(searchParams.get("limit") || "50");
-    const sortBy = searchParams.get("sortBy") || "viralScore"; // viralScore, views, growthRate, velocity
+    const sortBy = searchParams.get("sortBy") || "viralScore";
+
+    // Validate sortBy
+    const validSortFields = ["viralScore", "views", "growthRate", "velocity", "videos"];
+    const orderField = validSortFields.includes(sortBy) ? sortBy : "viralScore";
 
     // Get hashtags for specific country
     const hashtags = await prisma.hashtag.findMany({
       where: { country },
-      orderBy: [
-        { [sortBy]: "desc" },
-      ],
+      orderBy: { [orderField]: "desc" },
       take: limit,
     });
 
@@ -62,7 +64,7 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error("Error fetching hashtag rankings:", error);
     return NextResponse.json(
-      { success: false, error: "Failed to fetch rankings" },
+      { success: false, error: "Failed to fetch rankings", details: String(error) },
       { status: 500 }
     );
   }
