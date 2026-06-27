@@ -44,7 +44,7 @@ export default function TrendingPage() {
     async function fetchTrends() {
       setLoading(true);
       try {
-        const res = await fetch(`/api/trends?country=${selectedCountry.code}&limit=50`);
+        const res = await fetch(`/api/trends/?country=${selectedCountry.code}&limit=50`);
         const json = await res.json();
         if (json.data && json.data.length > 0) {
           setTrends(json.data);

@@ -107,7 +107,7 @@ export default function ExploreContent() {
     async function fetchTrends() {
       setLoading(true);
       try {
-        let url = `/api/trends?country=${selectedCountry.code}&limit=100`;
+        let url = `/api/trends/?country=${selectedCountry.code}&limit=100`;
         if (categoryFilter && categoryFilter !== "All") {
           url += `&category=${categoryFilter}`;
         }
@@ -133,7 +133,7 @@ export default function ExploreContent() {
     async function fetchCreators() {
       setLoading(true);
       try {
-        const res = await fetch(`/api/creators?country=${selectedCountry.code}&limit=50`);
+        const res = await fetch(`/api/creators/?country=${selectedCountry.code}&limit=50`);
         const json = await res.json();
         if (json.data) {
           setCreators(json.data);
@@ -155,7 +155,7 @@ export default function ExploreContent() {
     async function fetchHashtags() {
       setLoading(true);
       try {
-        const res = await fetch(`/api/hashtags?country=${selectedCountry.code}&limit=50`);
+        const res = await fetch(`/api/hashtags/?country=${selectedCountry.code}&limit=50`);
         const json = await res.json();
         if (json.data) {
           setHashtags(json.data);
@@ -177,7 +177,7 @@ export default function ExploreContent() {
     async function fetchSounds() {
       setLoading(true);
       try {
-        const res = await fetch(`/api/sounds?country=${selectedCountry.code}&limit=50`);
+        const res = await fetch(`/api/sounds/?country=${selectedCountry.code}&limit=50`);
         const json = await res.json();
         if (json.data) {
           setSounds(json.data);

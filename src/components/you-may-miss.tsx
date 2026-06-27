@@ -66,9 +66,9 @@ export function YouMayMiss() {
       try {
         // Fetch data from API
         const [trendsRes, creatorsRes, hashtagsRes] = await Promise.all([
-          fetch(`/api/trends?country=${selected.code}&limit=3&rising=true`),
-          fetch(`/api/creators?country=${selected.code}&limit=2&rising=true`),
-          fetch(`/api/hashtags?country=${selected.code}&limit=3&rising=true`),
+          fetch(`/api/trends/?country=${selected.code}&limit=3&rising=true`),
+          fetch(`/api/creators/?country=${selected.code}&limit=2&rising=true`),
+          fetch(`/api/hashtags/?country=${selected.code}&limit=3&rising=true`),
         ]);
 
         const trendsData: ApiResponse<TrendData> = await trendsRes.json();
