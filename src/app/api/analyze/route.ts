@@ -129,9 +129,15 @@ async function fetchViaApify(url: string): Promise<{
       const status = statusData.data.status;
 
       if (status === "SUCCEEDED") {
-        // Get dataset items
+        // Get dataset ID from run output
+        const datasetId = statusData.data.defaultDatasetId;
+        if (!datasetId) {
+          return { success: false, error: "No dataset ID in Apify response" };
+        }
+
+        // Get dataset items using the dataset ID directly
         const datasetResponse = await fetch(
-          `${APIFY_BASE_URL}/acts/${TIKTOK_SCRAPER_ACTOR}/runs/${runId}/dataset/items?limit=1`,
+          `${APIFY_BASE_URL}/datasets/${datasetId}/items?limit=1`,
           {
             headers: { "Authorization": `Bearer ${APIFY_API_TOKEN}` },
           }
