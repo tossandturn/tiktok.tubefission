@@ -53,10 +53,10 @@ export function Footer() {
           <div>
             <h3 className="text-xs font-bold text-white/60 uppercase tracking-wider mb-4">Resources</h3>
             <ul className="space-y-2.5">
-              <li><Link href="/topic/tiktok-trends" className="text-sm text-white/40 hover:text-white transition-colors">TikTok Trends Guide</Link></li>
-              <li><Link href="/topic/creator-economy" className="text-sm text-white/40 hover:text-white transition-colors">Creator Economy</Link></li>
-              <li><Link href="/topic/viral-marketing" className="text-sm text-white/40 hover:text-white transition-colors">Viral Marketing</Link></li>
-              <li><Link href="/topic/social-media-analytics" className="text-sm text-white/40 hover:text-white transition-colors">Social Analytics</Link></li>
+              <li><Link href="/topic/tiktok-trending-now" className="text-sm text-white/40 hover:text-white transition-colors">TikTok Trends Guide</Link></li>
+              <li><Link href="/topic/tiktok-creator-growth" className="text-sm text-white/40 hover:text-white transition-colors">Creator Economy</Link></li>
+              <li><Link href="/topic/tiktok-marketing-guide" className="text-sm text-white/40 hover:text-white transition-colors">Viral Marketing</Link></li>
+              <li><Link href="/topic/tiktok-analytics-tools" className="text-sm text-white/40 hover:text-white transition-colors">Social Analytics</Link></li>
             </ul>
           </div>
 
@@ -77,7 +77,7 @@ export function Footer() {
             © {new Date().getFullYear()} TikTok Intelligence. Not affiliated with TikTok/ByteDance.
           </p>
           <div className="flex items-center gap-4 text-[11px] text-white/20">
-            <span>Google AdSense: ca-pub-6772936350717773</span>
+            <span>Google AdSense: ca-pub-2329966945529740</span>
           </div>
         </div>
       </div>

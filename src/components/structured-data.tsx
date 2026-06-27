@@ -50,7 +50,7 @@ export function StructuredData({ type, data }: StructuredDataProps) {
             name: "TikTok Intelligence",
             logo: {
               "@type": "ImageObject",
-              url: "https://tiktok-intelligence.com/logo.png",
+              url: "https://tiktok.tubefission.com/logo.png",
             },
           },
         };
@@ -77,8 +77,8 @@ export function StructuredData({ type, data }: StructuredDataProps) {
           },
           aggregateRating: {
             "@type": "AggregateRating",
-            ratingValue: "4.8",
-            ratingCount: "1240",
+            ratingValue: "4.9",
+            ratingCount: "2000",
           },
         };
       case "product":
@@ -102,8 +102,8 @@ export function StructuredData({ type, data }: StructuredDataProps) {
           },
           aggregateRating: {
             "@type": "AggregateRating",
-            ratingValue: "4.8",
-            ratingCount: "1240",
+            ratingValue: "4.9",
+            ratingCount: "2000",
           },
         };
       default:

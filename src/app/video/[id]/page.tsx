@@ -33,25 +33,29 @@ function calculateEngagement(views: number, likes: number, comments: number) {
 }
 
 export async function generateMetadata({ params }: VideoPageProps): Promise<Metadata> {
-  const { id } = await params;
-  const video = await prisma.video.findUnique({
-    where: { id },
-    include: { trend: true },
-  });
+  try {
+    const { id } = await params;
+    const video = await prisma.video.findUnique({
+      where: { id },
+      include: { trend: true },
+    });
 
-  if (!video) {
-    return { title: "Video Not Found | TikTok Intelligence" };
+    if (!video) {
+      return { title: "Video Not Found | TikTok Intelligence" };
+    }
+
+    return {
+      title: `Video Analysis: ${video.trend?.title || "TikTok Video"} | TikTok Intelligence`,
+      description: `Analyze viral TikTok video performance. ${formatNumber(video.views)} views, engagement metrics, and AI-powered insights.`,
+      openGraph: {
+        title: `Video Analysis - ${formatNumber(video.views)} views`,
+        description: `TikTok video analytics and viral insights`,
+        images: video.thumbnail ? [{ url: video.thumbnail }] : undefined,
+      },
+    };
+  } catch {
+    return { title: "Video | TikTok Intelligence" };
   }
-
-  return {
-    title: `Video Analysis: ${video.trend?.title || "TikTok Video"} | TikTok Intelligence`,
-    description: `Analyze viral TikTok video performance. ${formatNumber(video.views)} views, engagement metrics, and AI-powered insights.`,
-    openGraph: {
-      title: `Video Analysis - ${formatNumber(video.views)} views`,
-      description: `TikTok video analytics and viral insights`,
-      images: video.thumbnail ? [{ url: video.thumbnail }] : undefined,
-    },
-  };
 }
 
 export async function generateStaticParams() {
