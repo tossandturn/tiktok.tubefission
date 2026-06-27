@@ -290,12 +290,12 @@ export async function POST(request: NextRequest) {
         const likes_count = Number(videoData.likes || videoData.heartCount || 0);
         const verified = Boolean(videoData.verified);
 
-        // Get or create the creator
+        // Get or create the creator (use tiktokId as primary key)
         const creator = await prisma.creator.upsert({
-          where: { username: parsed.username },
+          where: { tiktokId: uploader_id || parsed.videoId || "" },
           create: {
-            id: `creator_${parsed.videoId}`,
-            tiktokId: uploader_id,
+            id: `creator_${uploader_id || parsed.videoId}`,
+            tiktokId: uploader_id || parsed.videoId || "",
             username: parsed.username,
             displayName: uploader || parsed.username,
             avatar: thumbnail,
@@ -306,6 +306,7 @@ export async function POST(request: NextRequest) {
             updatedAt: new Date(),
           },
           update: {
+            username: parsed.username,
             displayName: uploader || parsed.username,
             avatar: thumbnail,
             followers: followers,
