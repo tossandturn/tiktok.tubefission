@@ -46,21 +46,32 @@ export function DailyInsightsSection({ defaultCountry = "US" }: DailyInsightsSec
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch(`/api/hashtags/rankings?country=${selectedCountry}&limit=50`);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+        const response = await fetch(`/api/hashtags/rankings/?country=${selectedCountry}&limit=50`, {
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
         const data = await response.json();
 
         if (data.success) {
           interface HashtagData {
-  name: string;
-  viralScore?: number;
-  isRising?: boolean;
-  growthRate: number;
-  views: string;
-  category?: string;
-}
+            name: string;
+            viralScore?: number;
+            isRising?: boolean;
+            growthRate: number;
+            views: string;
+            category?: string;
+          }
 
-// Transform hashtag data for word cloud
-const wordCloud: WordCloudData[] = data.hashtags.map((h: HashtagData) => ({
+          // Transform hashtag data for word cloud
+          const wordCloud: WordCloudData[] = data.hashtags.map((h: HashtagData) => ({
             name: h.name,
             weight: Math.min(Math.floor((h.viralScore || 50) / 10), 10) + 1,
             viralScore: h.viralScore || 50,
@@ -84,8 +95,9 @@ const wordCloud: WordCloudData[] = data.hashtags.map((h: HashtagData) => ({
         } else {
           setError(data.error || "Failed to load data");
         }
-      } catch {
-        setError("Network error");
+      } catch (err) {
+        console.error("Failed to fetch rankings:", err);
+        setError("Network error - please try again");
       } finally {
         setLoading(false);
       }
