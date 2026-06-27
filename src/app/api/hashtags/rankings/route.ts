@@ -37,28 +37,12 @@ export async function GET(request: Request) {
       scrapedAt: hashtag.scrapedAt,
     }));
 
-    // Get country stats for word cloud
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const dailyStats = await prisma.countryDailyStats.findFirst({
-      where: {
-        country,
-        date: {
-          gte: today,
-        },
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
-
     return NextResponse.json({
       success: true,
       country,
       hashtags: rankedHashtags,
-      wordCloud: dailyStats?.wordCloud || null,
-      boomingKeywords: dailyStats?.boomingKeywords || null,
+      wordCloud: null,
+      boomingKeywords: null,
       totalCount: hashtags.length,
     });
   } catch (error) {
