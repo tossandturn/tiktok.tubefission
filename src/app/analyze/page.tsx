@@ -171,7 +171,6 @@ export default function AnalyzePage() {
                 disabled={loading}
                 className="absolute right-2 bg-gradient-to-r from-tiktok-cyan to-tiktok-cyan/80 hover:from-tiktok-cyan/90 hover:to-tiktok-cyan/70 text-black font-semibold px-6 py-3 rounded-full disabled:opacity-50"
               >
-              >
                 {loading ? (
                   <Loader2 className="w-5 h-5 animate-spin" />
                 ) : (
