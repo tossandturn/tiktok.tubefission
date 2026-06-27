@@ -17,23 +17,27 @@ interface TopicPageProps {
 }
 
 export async function generateMetadata({ params }: TopicPageProps): Promise<Metadata> {
-  const { keyword } = await params;
-  const topic = SEO_KEYWORDS.find(t => t.keyword === keyword);
+  try {
+    const { keyword } = await params;
+    const topic = SEO_KEYWORDS.find(t => t.keyword === keyword);
 
-  if (!topic) {
-    return { title: "Topic Not Found | TikTok Intelligence" };
+    if (!topic) {
+      return { title: "Topic Not Found | TikTok Intelligence" };
+    }
+
+    return {
+      title: `${topic.title} — TikTok Intelligence`,
+      description: `Discover ${topic.title.toLowerCase()} analytics, trending data, and AI-powered insights. Track viral content and optimize your TikTok strategy.`,
+      keywords: [topic.title, "TikTok", topic.category, "analytics", "trends", "viral"],
+      openGraph: {
+        title: topic.title,
+        description: `AI-powered ${topic.title.toLowerCase()} analytics and insights`,
+        type: "article",
+      },
+    };
+  } catch {
+    return { title: "Topic | TikTok Intelligence" };
   }
-
-  return {
-    title: `${topic.title} — TikTok Intelligence`,
-    description: `Discover ${topic.title.toLowerCase()} analytics, trending data, and AI-powered insights. Track viral content and optimize your TikTok strategy.`,
-    keywords: [topic.title, "TikTok", topic.category, "analytics", "trends", "viral"],
-    openGraph: {
-      title: topic.title,
-      description: `AI-powered ${topic.title.toLowerCase()} analytics and insights`,
-      type: "article",
-    },
-  };
 }
 
 export async function generateStaticParams() {

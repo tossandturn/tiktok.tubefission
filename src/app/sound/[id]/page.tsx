@@ -52,19 +52,13 @@ export async function generateMetadata({ params }: SoundPageProps): Promise<Meta
 }
 
 export async function generateStaticParams() {
-  const sounds = await prisma.sound.findMany({
-    take: 100,
-    select: { id: true },
-    orderBy: [
-      { isViral: "desc" },
-      { uses: "desc" },
-    ],
-  });
-
-  return sounds.map((sound) => ({
-    id: sound.id,
-  }));
+  // Return empty - pages will be generated on-demand via ISR
+  return [];
 }
+
+export const dynamicParams = true;
+
+export const revalidate = 3600;
 
 export default async function SoundPage({ params }: SoundPageProps) {
   const { id } = await params;

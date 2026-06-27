@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Search, Loader2, TrendingUp, Hash, User, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
 

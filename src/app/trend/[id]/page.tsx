@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, TrendingUp, Eye, Users, Clock, Share2, Bookmark, Flame, Sparkles, BarChart3, Target, Zap, Globe } from "lucide-react";
+import { ArrowLeft, TrendingUp, Eye, Users, Clock, Flame, Sparkles, BarChart3, Target, Zap, Globe } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { AdSlot } from "@/components/ad-slot";
 import { FloatingTags } from "@/components/floating-tags";

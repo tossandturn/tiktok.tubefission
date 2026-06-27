@@ -54,53 +54,68 @@ export async function generateMetadata({ params }: VideoPageProps): Promise<Meta
   };
 }
 
+export async function generateStaticParams() {
+  // Return empty - pages will be generated on-demand via ISR
+  return [];
+}
+
+export const dynamicParams = true;
+
+export const revalidate = 3600; // 1 hour
+
 export default async function VideoPage({ params }: VideoPageProps) {
   const { id } = await params;
 
-  const video = await prisma.video.findUnique({
-    where: { id },
-    include: { trend: { include: { tags: { include: { tag: true } } } } },
-  });
-
-  if (!video) {
+  // Handle placeholder id from generateStaticParams fallback
+  if (id === "placeholder") {
     notFound();
   }
 
-  // Get related videos from same trend
-  const relatedVideos = await prisma.video.findMany({
-    where: {
-      trendId: video.trendId,
-      id: { not: video.id },
-    },
-    take: 6,
-    orderBy: { views: "desc" },
-  });
+  try {
+    const video = await prisma.video.findUnique({
+      where: { id },
+      include: { trend: { include: { tags: { include: { tag: true } } } } },
+    });
 
-  // Calculate metrics
-  const views = Number(video.views) || 0;
-  const likes = Number(video.likes) || 0;
-  const comments = Number(video.comments) || 0;
-  const engagement = calculateEngagement(views, likes, comments);
-  const likeRate = views > 0 ? ((likes / views) * 100).toFixed(2) : "0";
-  const commentRate = views > 0 ? ((comments / views) * 100).toFixed(3) : "0";
+    if (!video) {
+      notFound();
+    }
 
-  // Generate insights based on data
-  const insights = [];
-  if (views > 10_000_000) {
-    insights.push({ icon: "🔥", title: "Mega Viral", desc: "Over 10M views places this in the top 1% of TikTok content", level: "viral" });
-  } else if (views > 1_000_000) {
-    insights.push({ icon: "⚡", title: "Viral Hit", desc: "Crossed 1M views - significant algorithmic boost", level: "high" });
-  } else if (views > 100_000) {
-    insights.push({ icon: "📈", title: "Trending", desc: "Strong performance with sustained engagement", level: "medium" });
-  }
+    // Get related videos from same trend
+    const relatedVideos = await prisma.video.findMany({
+      where: {
+        trendId: video.trendId,
+        id: { not: video.id },
+      },
+      take: 6,
+      orderBy: { views: "desc" },
+    });
 
-  if (Number(engagement) > 10) {
-    insights.push({ icon: "💎", title: "High Engagement", desc: `${engagement}% engagement is well above TikTok average of 5-8%`, level: "high" });
-  }
+    // Calculate metrics
+    const views = Number(video.views) || 0;
+    const likes = Number(video.likes) || 0;
+    const comments = Number(video.comments) || 0;
+    const engagement = calculateEngagement(views, likes, comments);
+    const likeRate = views > 0 ? ((likes / views) * 100).toFixed(2) : "0";
+    const commentRate = views > 0 ? ((comments / views) * 100).toFixed(3) : "0";
 
-  if (Number(likeRate) > 5) {
-    insights.push({ icon: "❤️", title: "Like Magnet", desc: `${likeRate}% like rate indicates strong content appeal`, level: "medium" });
-  }
+    // Generate insights based on data
+    const insights = [];
+    if (views > 10_000_000) {
+      insights.push({ icon: "🔥", title: "Mega Viral", desc: "Over 10M views places this in the top 1% of TikTok content", level: "viral" });
+    } else if (views > 1_000_000) {
+      insights.push({ icon: "⚡", title: "Viral Hit", desc: "Crossed 1M views - significant algorithmic boost", level: "high" });
+    } else if (views > 100_000) {
+      insights.push({ icon: "📈", title: "Trending", desc: "Strong performance with sustained engagement", level: "medium" });
+    }
+
+    if (Number(engagement) > 10) {
+      insights.push({ icon: "💎", title: "High Engagement", desc: `${engagement}% engagement is well above TikTok average of 5-8%`, level: "high" });
+    }
+
+    if (Number(likeRate) > 5) {
+      insights.push({ icon: "❤️", title: "Like Magnet", desc: `${likeRate}% like rate indicates strong content appeal`, level: "medium" });
+    }
 
 
   return (
@@ -351,4 +366,7 @@ export default async function VideoPage({ params }: VideoPageProps) {
       )}
     </div>
   );
+  } catch {
+    notFound();
+  }
 }

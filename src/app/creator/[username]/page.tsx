@@ -78,16 +78,23 @@ export async function generateMetadata({ params }: CreatorPageProps): Promise<Me
 }
 
 export async function generateStaticParams() {
-  const creators = await prisma.creator.findMany({
-    take: 100,
-    select: { username: true },
-    orderBy: { followers: "desc" },
-  });
+  try {
+    const creators = await prisma.creator.findMany({
+      take: 100,
+      select: { username: true },
+      orderBy: { followers: "desc" },
+    });
 
-  return creators.map((creator) => ({
-    username: creator.username,
-  }));
+    return creators.map((creator) => ({
+      username: creator.username,
+    }));
+  } catch {
+    // Database unavailable - skip static generation, use ISR
+    return [];
+  }
 }
+
+export const dynamicParams = true;
 
 export default async function CreatorPage({ params }: CreatorPageProps) {
   const { username } = await params;

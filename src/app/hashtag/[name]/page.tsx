@@ -72,19 +72,26 @@ export async function generateMetadata({ params }: HashtagPageProps): Promise<Me
 }
 
 export async function generateStaticParams() {
-  const hashtags = await prisma.hashtag.findMany({
-    take: 100,
-    select: { name: true },
-    orderBy: [
-      { viralScore: "desc" },
-      { views: "desc" },
-    ],
-  });
+  try {
+    const hashtags = await prisma.hashtag.findMany({
+      take: 100,
+      select: { name: true },
+      orderBy: [
+        { viralScore: "desc" },
+        { views: "desc" },
+      ],
+    });
 
-  return hashtags.map((hashtag) => ({
-    name: encodeURIComponent(hashtag.name),
-  }));
+    return hashtags.map((hashtag) => ({
+      name: encodeURIComponent(hashtag.name),
+    }));
+  } catch {
+    // Database unavailable - skip static generation, use ISR
+    return [];
+  }
 }
+
+export const dynamicParams = true;
 
 export default async function HashtagPage({ params }: HashtagPageProps) {
   const { name } = await params;
