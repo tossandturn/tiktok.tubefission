@@ -24,8 +24,8 @@ export default function AnalyzePage() {
   const [limit, setLimit] = useState<AnalyzeLimit>({
     isAuthenticated: false,
     usedAnalyzes: 0,
-    remainingAnalyzes: 100,
-    maxAnalyzes: 100,
+    remainingAnalyzes: Number.MAX_SAFE_INTEGER,
+    maxAnalyzes: Number.MAX_SAFE_INTEGER,
     hasReachedLimit: false,
     needsLogin: false,
   });
@@ -145,36 +145,6 @@ export default function AnalyzePage() {
             Paste a TikTok video URL to get instant AI-powered analytics,
             engagement insights, and viral potential scoring.
           </motion.p>
-
-          {/* Analyze Limit Indicator */}
-          {!limit.isAuthenticated && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3 }}
-              className="mb-6"
-            >
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10">
-                {limit.hasReachedLimit ? (
-                  <>
-                    <Lock className="w-4 h-4 text-tiktok-pink" />
-                    <span className="text-sm text-white/60">
-                      Free limit reached. Sign up for unlimited analyzes.
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    <span className="text-sm text-white/60">
-                      Free analyzes remaining today:
-                      <span className="text-tiktok-cyan font-semibold ml-1">
-                        {limit.remainingAnalyzes}/{limit.maxAnalyzes}
-                      </span>
-                    </span>
-                  </>
-                )}
-              </div>
-            </motion.div>
-          )}
 
           {/* Search Form */}
           <motion.form
