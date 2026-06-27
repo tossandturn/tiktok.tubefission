@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { exec } from "child_process";
+import { promisify } from "util";
+
+const execAsync = promisify(exec);
 
 const APIFY_API_TOKEN = process.env.APIFY_API_TOKEN || "";
 const APIFY_BASE_URL = "https://api.apify.com/v2";
@@ -23,6 +27,48 @@ function parseTikTokUrl(url: string): { videoId?: string; username?: string; ful
     return null;
   } catch {
     return null;
+  }
+}
+
+/**
+ * Fetch TikTok video data using yt-dlp
+ */
+async function fetchViaYtDlp(url: string): Promise<{
+  success: boolean;
+  data?: Record<string, unknown>;
+  error?: string;
+}> {
+  try {
+    const { stdout } = await execAsync(
+      `yt-dlp --dump-json --no-download "${url}" 2>/dev/null || echo "{}"`,
+      { timeout: 30000 }
+    );
+
+    const data = JSON.parse(stdout);
+
+    if (!data.id) {
+      return { success: false, error: "yt-dlp returned no data" };
+    }
+
+    return {
+      success: true,
+      data: {
+        id: data.id,
+        title: data.title,
+        description: data.description,
+        thumbnail: data.thumbnail,
+        view_count: data.view_count,
+        like_count: data.like_count,
+        comment_count: data.comment_count,
+        repost_count: data.repost_count,
+        uploader: data.uploader,
+        uploader_id: data.uploader_id,
+        upload_date: data.upload_date,
+      },
+    };
+  } catch (error) {
+    console.error("yt-dlp error:", error);
+    return { success: false, error: String(error) };
   }
 }
 
@@ -93,7 +139,27 @@ async function fetchViaApify(url: string): Promise<{
         const datasetItems = await datasetResponse.json();
 
         if (datasetItems && datasetItems.length > 0) {
-          return { success: true, data: datasetItems[0] };
+          const item = datasetItems[0];
+          return {
+            success: true,
+            data: {
+              id: item.id,
+              title: item.text || item.desc || "TikTok Video",
+              description: item.desc || "",
+              thumbnail: item.video?.cover || "",
+              view_count: item.stats?.playCount || 0,
+              like_count: item.stats?.diggCount || 0,
+              comment_count: item.stats?.commentCount || 0,
+              repost_count: item.stats?.shareCount || 0,
+              uploader: item.author?.nickname || "",
+              uploader_id: item.author?.id || "",
+              upload_date: item.createTime || "",
+              followers: item.author?.followerCount || 0,
+              following: item.author?.followingCount || 0,
+              likes: item.author?.heartCount || 0,
+              verified: item.author?.verified || false,
+            },
+          };
         }
 
         return { success: false, error: "No data returned from Apify" };
@@ -112,6 +178,39 @@ async function fetchViaApify(url: string): Promise<{
     console.error("Apify fetch error:", error);
     return { success: false, error: String(error) };
   }
+}
+
+/**
+ * Fetch video data using multiple sources (yt-dlp first, then Apify)
+ */
+async function fetchVideoData(url: string): Promise<{
+  success: boolean;
+  data?: Record<string, unknown>;
+  source?: string;
+  error?: string;
+}> {
+  // Try yt-dlp first (works locally, may fail on Vercel)
+  console.log("Trying yt-dlp...");
+  const ytResult = await fetchViaYtDlp(url);
+  if (ytResult.success && ytResult.data) {
+    console.log("yt-dlp success");
+    return { success: true, data: ytResult.data, source: "yt-dlp" };
+  }
+  console.log("yt-dlp failed:", ytResult.error);
+
+  // Fall back to Apify
+  console.log("Trying Apify...");
+  const apifyResult = await fetchViaApify(url);
+  if (apifyResult.success && apifyResult.data) {
+    console.log("Apify success");
+    return { success: true, data: apifyResult.data, source: "apify" };
+  }
+  console.log("Apify failed:", apifyResult.error);
+
+  return {
+    success: false,
+    error: `Both yt-dlp and Apify failed. yt-dlp: ${ytResult.error}. Apify: ${apifyResult.error}`,
+  };
 }
 
 export async function POST(request: NextRequest) {
@@ -153,35 +252,35 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Fetch video data via Apify
+    // Fetch video data
     if (parsed.username && parsed.videoId) {
       try {
-        console.log("Fetching video data via Apify...");
-        const apifyResult = await fetchViaApify(url);
+        const result = await fetchVideoData(url);
 
-        if (!apifyResult.success || !apifyResult.data) {
+        if (!result.success || !result.data) {
           return NextResponse.json({
             success: false,
-            error: apifyResult.error || "Failed to fetch video data from TikTok.",
+            error: result.error || "Failed to fetch video data from TikTok.",
           }, { status: 500 });
         }
 
-        const videoData = apifyResult.data;
+        const videoData = result.data;
 
-        // Extract data from Apify response
-        const id = String(videoData.id || parsed.videoId);
-        const description = String(videoData.desc || videoData.text || "");
-        const title = String(videoData.desc || "").split('\n')[0] || "TikTok Video";
-        const thumbnail = String((videoData as Record<string, unknown>).video && typeof (videoData as Record<string, unknown>).video === 'object' ? ((videoData as Record<string, unknown>).video as Record<string, unknown>).cover : "" || "");
-        const stats = (videoData.stats || {}) as Record<string, number>;
-        const view_count = stats.playCount || 0;
-        const like_count = stats.diggCount || 0;
-        const comment_count = stats.commentCount || 0;
-        const repost_count = stats.shareCount || 0;
-        const author = (videoData.author || {}) as Record<string, unknown>;
-        const uploader = String(author.nickname || parsed.username || "");
-        const uploader_id = String(author.id || "");
-        const createTime = String(videoData.createTime || "");
+        // Extract data
+        const description = String(videoData.description || videoData.desc || videoData.text || "");
+        const title = String(videoData.title || videoData.desc || videoData.text || "").split('\n')[0] || "TikTok Video";
+        const thumbnail = String(videoData.thumbnail || "");
+        const view_count = Number(videoData.view_count || videoData.playCount || 0);
+        const like_count = Number(videoData.like_count || videoData.diggCount || 0);
+        const comment_count = Number(videoData.comment_count || videoData.commentCount || 0);
+        const repost_count = Number(videoData.repost_count || videoData.shareCount || 0);
+        const uploader = String(videoData.uploader || videoData.nickname || parsed.username || "");
+        const uploader_id = String(videoData.uploader_id || videoData.authorId || "");
+        const upload_date = String(videoData.upload_date || videoData.createTime || "");
+        const followers = Number(videoData.followers || videoData.followerCount || 0);
+        const following = Number(videoData.following || videoData.followingCount || 0);
+        const likes_count = Number(videoData.likes || videoData.heartCount || 0);
+        const verified = Boolean(videoData.verified);
 
         // Get or create the creator
         const creator = await prisma.creator.upsert({
@@ -192,19 +291,19 @@ export async function POST(request: NextRequest) {
             username: parsed.username,
             displayName: uploader || parsed.username,
             avatar: thumbnail,
-            followers: Number(author.followerCount || 0),
-            following: Number(author.followingCount || 0),
-            likes: Number(author.heartCount || 0),
-            isVerified: Boolean(author.verified),
+            followers: followers,
+            following: following,
+            likes: likes_count,
+            isVerified: verified,
             updatedAt: new Date(),
           },
           update: {
             displayName: uploader || parsed.username,
             avatar: thumbnail,
-            followers: Number(author.followerCount || 0),
-            following: Number(author.followingCount || 0),
-            likes: Number(author.heartCount || 0),
-            isVerified: Boolean(author.verified),
+            followers: followers,
+            following: following,
+            likes: likes_count,
+            isVerified: verified,
             updatedAt: new Date(),
           },
         });
@@ -228,7 +327,7 @@ export async function POST(request: NextRequest) {
           update: {},
         });
 
-        // Create the video entry with real data
+        // Create the video entry
         const videoId = `video_${parsed.videoId}`;
         const views = String(view_count || 0);
         const likes = String(like_count || 0);
@@ -237,10 +336,17 @@ export async function POST(request: NextRequest) {
 
         // Parse upload date
         let publishedAt = new Date();
-        if (createTime) {
+        if (upload_date) {
           try {
-            if (typeof createTime === 'string' && /^\d+$/.test(createTime)) {
-              publishedAt = new Date(parseInt(createTime) * 1000);
+            if (/^\d+$/.test(upload_date)) {
+              publishedAt = new Date(parseInt(upload_date) * 1000);
+            } else if (upload_date.length === 8) {
+              const year = parseInt(upload_date.substring(0, 4));
+              const month = parseInt(upload_date.substring(4, 6)) - 1;
+              const day = parseInt(upload_date.substring(6, 8));
+              publishedAt = new Date(year, month, day);
+            } else if (upload_date.includes('T')) {
+              publishedAt = new Date(upload_date);
             }
           } catch {
             // Use current date if parsing fails
@@ -286,7 +392,7 @@ export async function POST(request: NextRequest) {
           video: video,
           creator: creator,
           cached: false,
-          source: "apify",
+          source: result.source,
           title: title,
           description: description,
         });
