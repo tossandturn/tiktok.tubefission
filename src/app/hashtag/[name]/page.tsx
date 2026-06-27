@@ -14,61 +14,67 @@ interface HashtagPageProps {
 }
 
 export async function generateMetadata({ params }: HashtagPageProps): Promise<Metadata> {
-  const { name } = await params;
-  const decodedName = decodeURIComponent(name);
-  const hashtag = await prisma.hashtag.findFirst({
-    where: { name: decodedName },
-    select: {
-      name: true,
-      views: true,
-      videos: true,
-      growthRate: true,
-      category: true,
-      velocity: true,
-      viralScore: true,
-    },
-  });
+  try {
+    const { name } = await params;
+    const decodedName = decodeURIComponent(name);
+    const hashtag = await prisma.hashtag.findFirst({
+      where: { name: decodedName },
+      select: {
+        name: true,
+        views: true,
+        videos: true,
+        growthRate: true,
+        category: true,
+        velocity: true,
+        viralScore: true,
+      },
+    });
 
-  if (!hashtag) {
+    if (!hashtag) {
+      return {
+        title: "Hashtag Not Found | TikTok Intelligence",
+      };
+    }
+
+    const title = `#${hashtag.name} TikTok Analytics & Trend Report`;
+    const description = truncateDescription(
+      `Analyze #${hashtag.name} TikTok hashtag performance. ${hashtag.views} views across ${hashtag.videos} videos. Growth rate: ${hashtag.growthRate.toFixed(1)}%. Discover trending content, viral potential and audience insights.`
+    );
+
     return {
-      title: "Hashtag Not Found | TikTok Intelligence",
+      title,
+      description,
+      keywords: [
+        `#${hashtag.name}`,
+        hashtag.name,
+        "TikTok hashtag",
+        "hashtag analytics",
+        "viral hashtag",
+        "trending hashtag",
+        hashtag.category || "TikTok",
+        "hashtag strategy",
+        "content trends",
+      ],
+      alternates: {
+        canonical: `https://tiktok.tubefission.com/hashtag/${encodeURIComponent(hashtag.name)}`,
+      },
+      openGraph: {
+        title: `#${hashtag.name} - TikTok Hashtag Analytics`,
+        description,
+        url: `https://tiktok.tubefission.com/hashtag/${encodeURIComponent(hashtag.name)}`,
+        type: "article",
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: `#${hashtag.name} - TikTok Analytics`,
+        description,
+      },
+    };
+  } catch {
+    return {
+      title: "Hashtag | TikTok Intelligence",
     };
   }
-
-  const title = `#${hashtag.name} TikTok Analytics & Trend Report`;
-  const description = truncateDescription(
-    `Analyze #${hashtag.name} TikTok hashtag performance. ${hashtag.views} views across ${hashtag.videos} videos. Growth rate: ${hashtag.growthRate.toFixed(1)}%. Discover trending content, viral potential and audience insights.`
-  );
-
-  return {
-    title,
-    description,
-    keywords: [
-      `#${hashtag.name}`,
-      hashtag.name,
-      "TikTok hashtag",
-      "hashtag analytics",
-      "viral hashtag",
-      "trending hashtag",
-      hashtag.category || "TikTok",
-      "hashtag strategy",
-      "content trends",
-    ],
-    alternates: {
-      canonical: `https://tiktok.tubefission.com/hashtag/${encodeURIComponent(hashtag.name)}`,
-    },
-    openGraph: {
-      title: `#${hashtag.name} - TikTok Hashtag Analytics`,
-      description,
-      url: `https://tiktok.tubefission.com/hashtag/${encodeURIComponent(hashtag.name)}`,
-      type: "article",
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: `#${hashtag.name} - TikTok Analytics`,
-      description,
-    },
-  };
 }
 
 export async function generateStaticParams() {
@@ -94,58 +100,69 @@ export async function generateStaticParams() {
 export const dynamicParams = true;
 
 export default async function HashtagPage({ params }: HashtagPageProps) {
-  const { name } = await params;
-  const decodedName = decodeURIComponent(name);
+  try {
+    const { name } = await params;
+    const decodedName = decodeURIComponent(name);
 
-  const hashtag = await prisma.hashtag.findFirst({
-    where: { name: decodedName },
-  });
+    const hashtag = await prisma.hashtag.findFirst({
+      where: { name: decodedName },
+    });
 
-  if (!hashtag) {
-    notFound();
-  }
+    if (!hashtag) {
+      notFound();
+    }
 
-  // Find trends related to this hashtag
-  const relatedTrends = await prisma.trend.findMany({
-    where: {
-      tags: {
-        some: {
-          tag: {
-            name: decodedName,
+    // Find trends related to this hashtag
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let relatedTrends: any[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let relatedHashtags: any[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let topCreators: any[] = [];
+
+    try {
+      relatedTrends = await prisma.trend.findMany({
+        where: {
+          tags: {
+            some: {
+              tag: {
+                name: decodedName,
+              },
+            },
           },
         },
-      },
-    },
-    take: 6,
-    orderBy: { viralScore: "desc" },
-  });
+        take: 6,
+        orderBy: { viralScore: "desc" },
+      });
 
-  // Get related hashtags (same category)
-  const relatedHashtags = await prisma.hashtag.findMany({
-    where: {
-      category: hashtag.category,
-      name: { not: decodedName },
-    },
-    take: 8,
-    orderBy: { viralScore: "desc" },
-  });
+      relatedHashtags = await prisma.hashtag.findMany({
+        where: {
+          category: hashtag.category,
+          name: { not: decodedName },
+        },
+        take: 8,
+        orderBy: { viralScore: "desc" },
+      });
 
-  // Get top creators using this hashtag
-  const topCreators = await prisma.creator.findMany({
-    where: {
-      niche: hashtag.category,
-    },
-    take: 6,
-    orderBy: { followers: "desc" },
-    select: {
-      id: true,
-      username: true,
-      displayName: true,
-      avatar: true,
-      followers: true,
-      niche: true,
-    },
-  });
+      topCreators = await prisma.creator.findMany({
+        where: {
+          niche: hashtag.category,
+        },
+        take: 6,
+        orderBy: { followers: "desc" },
+        select: {
+          id: true,
+          username: true,
+          displayName: true,
+          avatar: true,
+          followers: true,
+          niche: true,
+        },
+      });
+    } catch (dbError) {
+      console.error("Database error fetching related content:", dbError);
+      // Continue with empty arrays
+    }
 
   // Generate JSON-LD
   const topicSchema = generateTopicSchema(
@@ -196,4 +213,7 @@ export default async function HashtagPage({ params }: HashtagPageProps) {
       />
     </div>
   );
+  } catch {
+    notFound();
+  }
 }

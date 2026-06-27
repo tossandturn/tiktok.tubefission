@@ -54,29 +54,42 @@ export default async function TopicPage({ params }: TopicPageProps) {
     notFound();
   }
 
-  // Fetch related trends based on category
-  const relatedTrends = await prisma.trend.findMany({
-    where: {
-      OR: [
-        { category: topic.category },
-        { title: { contains: topic.title.split(" ")[0], mode: "insensitive" } },
-      ],
-    },
-    take: 6,
-    orderBy: { viralScore: "desc" },
-  });
+  // Fetch related trends and hashtags with error handling
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let relatedTrends: any[] = [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let relatedHashtags: any[] = [];
 
-  // Fetch related hashtags
-  const relatedHashtags = await prisma.hashtag.findMany({
-    where: {
-      OR: [
-        { category: topic.category },
-        { name: { contains: topic.title.split(" ")[0].toLowerCase(), mode: "insensitive" } },
-      ],
-    },
-    take: 8,
-    orderBy: { views: "desc" },
-  });
+  try {
+    // Fetch related trends based on category
+    relatedTrends = await prisma.trend.findMany({
+      where: {
+        OR: [
+          { category: topic.category },
+          { title: { contains: topic.title.split(" ")[0], mode: "insensitive" } },
+        ],
+      },
+      take: 6,
+      orderBy: { viralScore: "desc" },
+    });
+
+    // Fetch related hashtags
+    relatedHashtags = await prisma.hashtag.findMany({
+      where: {
+        OR: [
+          { category: topic.category },
+          { name: { contains: topic.title.split(" ")[0].toLowerCase(), mode: "insensitive" } },
+        ],
+      },
+      take: 8,
+      orderBy: { views: "desc" },
+    });
+  } catch (error) {
+    console.error("Database error:", error);
+    // Return empty arrays - page will show fallback content
+    relatedTrends = [];
+    relatedHashtags = [];
+  }
 
   return (
     <div className="min-h-screen bg-black">

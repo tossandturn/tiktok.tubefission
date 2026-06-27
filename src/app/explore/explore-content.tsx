@@ -109,15 +109,26 @@ export default function ExploreContent() {
       try {
         let url = `/api/trends/?country=${selectedCountry.code}&limit=100`;
         if (categoryFilter && categoryFilter !== "All") {
-          url += `&category=${categoryFilter}`;
+          url += `&category=${encodeURIComponent(categoryFilter)}`;
         }
-        const res = await fetch(url);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+        const res = await fetch(url, { signal: controller.signal });
+        clearTimeout(timeoutId);
+
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+
         const json = await res.json();
         if (json.data) {
           setTrends(json.data);
         }
       } catch (err) {
         console.error("Failed to fetch trends:", err);
+        // Set empty array on error so UI shows "No trends match your filters"
+        setTrends([]);
       } finally {
         setLoading(false);
       }
@@ -133,13 +144,25 @@ export default function ExploreContent() {
     async function fetchCreators() {
       setLoading(true);
       try {
-        const res = await fetch(`/api/creators/?country=${selectedCountry.code}&limit=50`);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+        const res = await fetch(`/api/creators/?country=${selectedCountry.code}&limit=50`, {
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+
         const json = await res.json();
         if (json.data) {
           setCreators(json.data);
         }
       } catch (err) {
         console.error("Failed to fetch creators:", err);
+        setCreators([]);
       } finally {
         setLoading(false);
       }
@@ -155,13 +178,25 @@ export default function ExploreContent() {
     async function fetchHashtags() {
       setLoading(true);
       try {
-        const res = await fetch(`/api/hashtags/?country=${selectedCountry.code}&limit=50`);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+        const res = await fetch(`/api/hashtags/?country=${selectedCountry.code}&limit=50`, {
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+
         const json = await res.json();
         if (json.data) {
           setHashtags(json.data);
         }
       } catch (err) {
         console.error("Failed to fetch hashtags:", err);
+        setHashtags([]);
       } finally {
         setLoading(false);
       }
@@ -177,13 +212,25 @@ export default function ExploreContent() {
     async function fetchSounds() {
       setLoading(true);
       try {
-        const res = await fetch(`/api/sounds/?country=${selectedCountry.code}&limit=50`);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+        const res = await fetch(`/api/sounds/?country=${selectedCountry.code}&limit=50`, {
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+
         const json = await res.json();
         if (json.data) {
           setSounds(json.data);
         }
       } catch (err) {
         console.error("Failed to fetch sounds:", err);
+        setSounds([]);
       } finally {
         setLoading(false);
       }

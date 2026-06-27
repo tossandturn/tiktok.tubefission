@@ -44,7 +44,18 @@ export default function TrendingPage() {
     async function fetchTrends() {
       setLoading(true);
       try {
-        const res = await fetch(`/api/trends/?country=${selectedCountry.code}&limit=50`);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+        const res = await fetch(`/api/trends/?country=${selectedCountry.code}&limit=50`, {
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+
         const json = await res.json();
         if (json.data && json.data.length > 0) {
           setTrends(json.data);
@@ -56,8 +67,9 @@ export default function TrendingPage() {
             tags: t.tags?.map((tag: string) => ({ tag: { name: tag.replace(/#/g, "") } })) || [],
           })));
         }
-      } catch {
-        // API unavailable — use static data
+      } catch (err) {
+        console.error("Failed to fetch trends:", err);
+        // Fallback to static data on error
         setTrends(staticTrends.map(t => ({
           ...t,
           slug: t.id,

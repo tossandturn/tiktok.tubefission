@@ -64,12 +64,27 @@ export function YouMayMiss() {
     async function fetchMissedContent() {
       setLoading(true);
       try {
-        // Fetch data from API
+        // Fetch data from API with timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+
         const [trendsRes, creatorsRes, hashtagsRes] = await Promise.all([
-          fetch(`/api/trends/?country=${selected.code}&limit=3&rising=true`),
-          fetch(`/api/creators/?country=${selected.code}&limit=2&rising=true`),
-          fetch(`/api/hashtags/?country=${selected.code}&limit=3&rising=true`),
+          fetch(`/api/trends/?country=${selected.code}&limit=3&rising=true`, {
+            signal: controller.signal,
+          }),
+          fetch(`/api/creators/?country=${selected.code}&limit=2&rising=true`, {
+            signal: controller.signal,
+          }),
+          fetch(`/api/hashtags/?country=${selected.code}&limit=3&rising=true`, {
+            signal: controller.signal,
+          }),
         ]);
+        clearTimeout(timeoutId);
+
+        // Check if responses are OK
+        if (!trendsRes.ok || !creatorsRes.ok || !hashtagsRes.ok) {
+          throw new Error("One or more API requests failed");
+        }
 
         const trendsData: ApiResponse<TrendData> = await trendsRes.json();
         const creatorsData: ApiResponse<CreatorData> = await creatorsRes.json();
