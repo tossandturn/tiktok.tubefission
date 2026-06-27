@@ -44,7 +44,7 @@ export function TrendActions({ trendId, trendTitle }: TrendActionsProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           type: "trend",
-          targetId: trendId,
+          id: trendId,
         }),
       });
 

@@ -6,6 +6,7 @@ import Image from "next/image";
 import { TrendingUp, Eye, Clock, Sparkles, Users, Hash, Music, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useCountry } from "@/components/country-context";
+import { trends as staticTrends, featuredCreators } from "@/lib/data";
 
 interface MissedItem {
   id: string;
@@ -116,7 +117,31 @@ export function YouMayMiss() {
         setItems(missedItems.slice(0, 6));
       } catch (error) {
         console.error("Failed to fetch missed content:", error);
-        setItems([]);
+        // Fallback to static data
+        const staticItems: MissedItem[] = [
+          ...staticTrends.slice(0, 4).map((t) => ({
+            id: t.id,
+            type: "trend" as const,
+            title: t.title,
+            subtitle: t.category || "Trending",
+            growthRate: t.growthRate,
+            views: t.views,
+            reason: t.isNew ? "Just started trending" : "Rising fast",
+            thumbnail: t.thumbnail,
+            slug: t.id,
+          })),
+          ...featuredCreators.slice(0, 2).map((c) => ({
+            id: c.id,
+            type: "creator" as const,
+            title: c.name,
+            subtitle: c.niche || "Creator",
+            growthRate: 15,
+            reason: "Momentum rising",
+            thumbnail: c.avatar,
+            slug: c.name.toLowerCase().replace(/\s+/g, ""),
+          })),
+        ];
+        setItems(staticItems);
       } finally {
         setLoading(false);
       }

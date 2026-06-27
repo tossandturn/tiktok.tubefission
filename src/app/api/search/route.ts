@@ -63,7 +63,7 @@ export async function GET(request: Request) {
       .map(t => ({
         ...t,
         slug: t.id,
-        tags: t.tags.map((tag: string) => ({ tag: { name: tag.replace("#", "") } })),
+        tags: t.tags.map((tag: string) => ({ tag: { name: tag.replace(/#/g, "") } })),
       }));
 
     return NextResponse.json({

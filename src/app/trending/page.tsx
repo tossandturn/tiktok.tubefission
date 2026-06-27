@@ -53,7 +53,7 @@ export default function TrendingPage() {
           setTrends(staticTrends.map(t => ({
             ...t,
             slug: t.id,
-            tags: t.tags?.map((tag: string) => ({ tag: { name: tag.replace('#', '') } })) || [],
+            tags: t.tags?.map((tag: string) => ({ tag: { name: tag.replace(/#/g, "") } })) || [],
           })));
         }
       } catch {
@@ -61,7 +61,7 @@ export default function TrendingPage() {
         setTrends(staticTrends.map(t => ({
           ...t,
           slug: t.id,
-          tags: t.tags?.map((tag: string) => ({ tag: { name: tag.replace('#', '') } })) || [],
+          tags: t.tags?.map((tag: string) => ({ tag: { name: tag.replace(/#/g, "") } })) || [],
         })));
       } finally {
         setLoading(false);
