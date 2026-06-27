@@ -59,7 +59,7 @@ export function SaaSHero() {
       <div className="relative z-10 max-w-4xl mx-auto text-center">
         {/* Badge */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 1, y: 0 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
           className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-6"
@@ -70,7 +70,7 @@ export function SaaSHero() {
 
         {/* Headline */}
         <motion.h1
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 1, y: 0 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
           className="text-4xl md:text-6xl lg:text-7xl font-bold text-white leading-tight mb-6"
@@ -84,10 +84,10 @@ export function SaaSHero() {
 
         {/* Subheadline */}
         <motion.p
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 1, y: 0 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="text-lg md:text-xl text-white/60 max-w-2xl mx-auto mb-10"
+          className="text-lg md:text-xl text-white/80 max-w-2xl mx-auto mb-10"
         >
           AI-powered creator intelligence, trend forecasting, and competitor analysis.
           Get 7-day advance warning on viral trends and 3x your engagement.
@@ -95,14 +95,14 @@ export function SaaSHero() {
 
         {/* URL Input Form */}
         <motion.form
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 1, y: 0 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
           onSubmit={handleAnalyze}
           className="relative max-w-2xl mx-auto mb-8"
         >
           <div className="relative flex items-center">
-            <div className="absolute left-4 text-white/40">
+            <div className="absolute left-4 text-white/60">
               <Video className="w-5 h-5" />
             </div>
             <Input
@@ -110,7 +110,7 @@ export function SaaSHero() {
               placeholder="Paste TikTok video URL to analyze..."
               value={url}
               onChange={(e) => setUrl(e.target.value)}
-              className="w-full pl-12 pr-32 py-6 text-base bg-white/5 border-white/10 text-white placeholder:text-white/40 rounded-full focus:border-tiktok-cyan focus:ring-tiktok-cyan/20"
+              className="w-full pl-12 pr-32 py-6 text-base bg-white/10 border-white/20 text-white placeholder:text-white/60 rounded-full focus:border-tiktok-cyan focus:ring-tiktok-cyan/20"
               disabled={loading}
             />
             <Button
@@ -132,7 +132,7 @@ export function SaaSHero() {
 
         {/* CTAs */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 1, y: 0 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.4 }}
           className="flex flex-col sm:flex-row items-center justify-center gap-4"

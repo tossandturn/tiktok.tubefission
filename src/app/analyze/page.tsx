@@ -148,14 +148,14 @@ export default function AnalyzePage() {
 
           {/* Search Form */}
           <motion.form
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 1, y: 0 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
             onSubmit={handleAnalyze}
             className="relative max-w-2xl mx-auto"
           >
             <div className="relative flex items-center">
-              <div className="absolute left-4 text-white/40">
+              <div className="absolute left-4 text-white/60">
                 <Video className="w-5 h-5" />
               </div>
               <Input
@@ -163,13 +163,14 @@ export default function AnalyzePage() {
                 placeholder="https://www.tiktok.com/@username/video/1234567890"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
-                className="w-full pl-12 pr-32 py-6 text-base bg-white/5 border-white/10 text-white placeholder:text-white/40 rounded-full focus:border-tiktok-cyan focus:ring-tiktok-cyan/20"
+                className="w-full pl-12 pr-32 py-6 text-base bg-white/10 border-white/20 text-white placeholder:text-white/60 rounded-full focus:border-tiktok-cyan focus:ring-tiktok-cyan/20"
                 disabled={loading}
               />
               <Button
                 type="submit"
-                disabled={loading || !url.trim()}
-                className="absolute right-2 bg-gradient-to-r from-tiktok-cyan to-tiktok-cyan/80 hover:from-tiktok-cyan/90 hover:to-tiktok-cyan/70 text-black font-semibold px-6 py-3 rounded-full"
+                disabled={loading}
+                className="absolute right-2 bg-gradient-to-r from-tiktok-cyan to-tiktok-cyan/80 hover:from-tiktok-cyan/90 hover:to-tiktok-cyan/70 text-black font-semibold px-6 py-3 rounded-full disabled:opacity-50"
+              >
               >
                 {loading ? (
                   <Loader2 className="w-5 h-5 animate-spin" />
