@@ -367,7 +367,6 @@ async function processVideos(videos: ApifyVideoData[], category: string): Promis
 
   for (const [musicId, soundData] of Object.entries(uniqueSounds)) {
     const totalUses = soundData.videos.length;
-    const totalViews = soundData.videos.reduce((sum, v) => sum + (v.stats?.playCount || 0), 0);
 
     await prisma.sound.upsert({
       where: { tiktokId: musicId },

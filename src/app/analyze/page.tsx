@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, Sparkles, ArrowRight, Video, Lock } from "lucide-react";
+import { Loader2, Sparkles, ArrowRight, Video } from "lucide-react";
 import { LoginModal } from "@/components/login-modal";
 
 interface AnalyzeLimit {
