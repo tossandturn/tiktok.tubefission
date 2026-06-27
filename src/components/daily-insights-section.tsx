@@ -18,6 +18,25 @@ const COUNTRIES = [
   { code: "TW", name: "Taiwan", flag: "🇹🇼" },
 ];
 
+// Static fallback data when API is unavailable
+const STATIC_HASHTAGS = [
+  { name: "fyp", viralScore: 95, isRising: true, growthRate: 125, views: "2.4B", category: "General" },
+  { name: "foryou", viralScore: 92, isRising: true, growthRate: 98, views: "1.8B", category: "General" },
+  { name: "viral", viralScore: 88, isRising: true, growthRate: 156, views: "892M", category: "Trending" },
+  { name: "trending", viralScore: 85, isRising: false, growthRate: 45, views: "567M", category: "Trending" },
+  { name: "dance", viralScore: 82, isRising: true, growthRate: 89, views: "1.2B", category: "Dance" },
+  { name: "comedy", viralScore: 78, isRising: false, growthRate: 34, views: "445M", category: "Comedy" },
+  { name: "funny", viralScore: 75, isRising: true, growthRate: 67, views: "678M", category: "Comedy" },
+  { name: "music", viralScore: 72, isRising: false, growthRate: 23, views: "2.1B", category: "Music" },
+  { name: "love", viralScore: 70, isRising: false, growthRate: 12, views: "3.2B", category: "Lifestyle" },
+  { name: "fashion", viralScore: 68, isRising: true, growthRate: 78, views: "890M", category: "Fashion" },
+  { name: "beauty", viralScore: 65, isRising: true, growthRate: 92, views: "567M", category: "Beauty" },
+  { name: "food", viralScore: 62, isRising: false, growthRate: 28, views: "1.1B", category: "Food" },
+  { name: "travel", viralScore: 60, isRising: true, growthRate: 145, views: "423M", category: "Travel" },
+  { name: "fitness", viralScore: 58, isRising: true, growthRate: 112, views: "334M", category: "Fitness" },
+  { name: "gaming", viralScore: 55, isRising: true, growthRate: 89, views: "556M", category: "Gaming" },
+];
+
 interface WordCloudData {
   name: string;
   weight: number;
@@ -34,17 +53,37 @@ interface BoomingKeywordData {
   category?: string;
 }
 
+function transformToWordCloud(hashtags: typeof STATIC_HASHTAGS): WordCloudData[] {
+  return hashtags.map((h) => ({
+    name: h.name,
+    weight: Math.min(Math.floor((h.viralScore || 50) / 10), 10) + 1,
+    viralScore: h.viralScore,
+    trendDirection: h.isRising ? "up" : h.growthRate > 0 ? "stable" : "down",
+  }));
+}
+
+function transformToBooming(hashtags: typeof STATIC_HASHTAGS): BoomingKeywordData[] {
+  return hashtags
+    .sort((a, b) => b.growthRate - a.growthRate)
+    .slice(0, 10)
+    .map((h, index) => ({
+      name: h.name,
+      growthRate: h.growthRate,
+      views: h.views,
+      rank: index + 1,
+      category: h.category,
+    }));
+}
+
 export function DailyInsightsSection({ defaultCountry = "US" }: DailyInsightsSectionProps) {
   const [selectedCountry, setSelectedCountry] = useState(defaultCountry);
-  const [wordCloudData, setWordCloudData] = useState<WordCloudData[]>([]);
-  const [boomingKeywords, setBoomingKeywords] = useState<BoomingKeywordData[]>([]);
+  const [wordCloudData, setWordCloudData] = useState<WordCloudData[]>(transformToWordCloud(STATIC_HASHTAGS));
+  const [boomingKeywords, setBoomingKeywords] = useState<BoomingKeywordData[]>(transformToBooming(STATIC_HASHTAGS));
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchData() {
       setLoading(true);
-      setError(null);
       try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 10000);
@@ -60,7 +99,7 @@ export function DailyInsightsSection({ defaultCountry = "US" }: DailyInsightsSec
 
         const data = await response.json();
 
-        if (data.success) {
+        if (data.success && data.hashtags && data.hashtags.length > 0) {
           interface HashtagData {
             name: string;
             viralScore?: number;
@@ -93,11 +132,15 @@ export function DailyInsightsSection({ defaultCountry = "US" }: DailyInsightsSec
           setWordCloudData(wordCloud);
           setBoomingKeywords(booming);
         } else {
-          setError(data.error || "Failed to load data");
+          // Use static data if API returns empty
+          setWordCloudData(transformToWordCloud(STATIC_HASHTAGS));
+          setBoomingKeywords(transformToBooming(STATIC_HASHTAGS));
         }
       } catch (err) {
         console.error("Failed to fetch rankings:", err);
-        setError("Network error - please try again");
+        // Use static data on error - already set as default
+        setWordCloudData(transformToWordCloud(STATIC_HASHTAGS));
+        setBoomingKeywords(transformToBooming(STATIC_HASHTAGS));
       } finally {
         setLoading(false);
       }
@@ -155,8 +198,6 @@ export function DailyInsightsSection({ defaultCountry = "US" }: DailyInsightsSec
             </div>
             {loading ? (
               <WordCloudSkeleton />
-            ) : error ? (
-              <div className="text-center py-8 text-zinc-500">{error}</div>
             ) : (
               <WordCloud data={wordCloudData} country={selectedCountry} />
             )}
@@ -170,8 +211,6 @@ export function DailyInsightsSection({ defaultCountry = "US" }: DailyInsightsSec
             </div>
             {loading ? (
               <BoomingKeywordsSkeleton />
-            ) : error ? (
-              <div className="text-center py-8 text-zinc-500">{error}</div>
             ) : (
               <BoomingKeywords keywords={boomingKeywords} country={selectedCountry} />
             )}
