@@ -290,32 +290,70 @@ export async function POST(request: NextRequest) {
         const likes_count = Number(videoData.likes || videoData.heartCount || 0);
         const verified = Boolean(videoData.verified);
 
-        // Get or create the creator (use tiktokId as primary key)
-        const creator = await prisma.creator.upsert({
-          where: { tiktokId: uploader_id || parsed.videoId || "" },
-          create: {
-            id: `creator_${uploader_id || parsed.videoId}`,
-            tiktokId: uploader_id || parsed.videoId || "",
-            username: parsed.username,
-            displayName: uploader || parsed.username,
-            avatar: thumbnail,
-            followers: followers,
-            following: following,
-            likes: likes_count,
-            isVerified: verified,
-            updatedAt: new Date(),
-          },
-          update: {
-            username: parsed.username,
-            displayName: uploader || parsed.username,
-            avatar: thumbnail,
-            followers: followers,
-            following: following,
-            likes: likes_count,
-            isVerified: verified,
-            updatedAt: new Date(),
-          },
-        });
+        // Get or create the creator - handle both tiktokId and username unique constraints
+        let creator;
+        try {
+          // Try to find existing creator by tiktokId first
+          const existingCreator = await prisma.creator.findFirst({
+            where: {
+              OR: [
+                { tiktokId: uploader_id || "" },
+                { username: parsed.username },
+              ],
+            },
+          });
+
+          if (existingCreator) {
+            // Update existing creator
+            creator = await prisma.creator.update({
+              where: { id: existingCreator.id },
+              data: {
+                tiktokId: uploader_id || existingCreator.tiktokId,
+                username: parsed.username,
+                displayName: uploader || parsed.username,
+                avatar: thumbnail || existingCreator.avatar,
+                followers: followers,
+                following: following,
+                likes: likes_count,
+                isVerified: verified,
+                updatedAt: new Date(),
+              },
+            });
+          } else {
+            // Create new creator
+            creator = await prisma.creator.create({
+              data: {
+                id: `creator_${uploader_id || parsed.username}_${Date.now()}`,
+                tiktokId: uploader_id || "",
+                username: parsed.username,
+                displayName: uploader || parsed.username,
+                avatar: thumbnail,
+                followers: followers,
+                following: following,
+                likes: likes_count,
+                isVerified: verified,
+                updatedAt: new Date(),
+              },
+            });
+          }
+        } catch (creatorError) {
+          console.error("Creator upsert error:", creatorError);
+          // Create with unique ID to avoid conflicts
+          creator = await prisma.creator.create({
+            data: {
+              id: `creator_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+              tiktokId: uploader_id || `unknown_${Date.now()}`,
+              username: `${parsed.username}_${Date.now()}`,
+              displayName: uploader || parsed.username,
+              avatar: thumbnail,
+              followers: followers,
+              following: following,
+              likes: likes_count,
+              isVerified: verified,
+              updatedAt: new Date(),
+            },
+          });
+        }
 
         // Get or create the "analyzed" trend
         const trend = await prisma.trend.upsert({
