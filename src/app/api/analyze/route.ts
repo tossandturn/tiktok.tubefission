@@ -8,7 +8,7 @@ const execAsync = promisify(exec);
 const APIFY_API_TOKEN = process.env.APIFY_API_TOKEN || "";
 const APIFY_BASE_URL = "https://api.apify.com/v2";
 // Apify actor IDs use ~ separator, not /
-const TIKTOK_SCRAPER_ACTOR = (process.env.APIFY_TIKTOK_SCRAPER_ACTOR || "curious_coder/tiktok-scraper").replace("/", "~");
+const TIKTOK_SCRAPER_ACTOR = (process.env.APIFY_TIKTOK_SCRAPER_ACTOR || "clockworks/tiktok-scraper").replace("/", "~");
 
 /**
  * Parse TikTok URL to extract video ID and username
@@ -90,6 +90,7 @@ async function fetchViaApify(url: string): Promise<{
 
   try {
     // Start a scraper run with the video URL
+    // clockworks/tiktok-scraper expects top-level postURLs
     const runResponse = await fetch(
       `${APIFY_BASE_URL}/acts/${TIKTOK_SCRAPER_ACTOR}/runs`,
       {
@@ -99,11 +100,7 @@ async function fetchViaApify(url: string): Promise<{
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          input: {
-            urls: [url],
-            shouldDownloadCovers: false,
-            shouldDownloadVideos: false,
-          },
+          postURLs: [url],
         }),
       }
     );
@@ -144,24 +141,25 @@ async function fetchViaApify(url: string): Promise<{
 
         if (datasetItems && datasetItems.length > 0) {
           const item = datasetItems[0];
+          // Handle clockworks/tiktok-scraper data format
           return {
             success: true,
             data: {
               id: item.id,
               title: item.text || item.desc || "TikTok Video",
-              description: item.desc || "",
-              thumbnail: item.video?.cover || "",
-              view_count: item.stats?.playCount || 0,
-              like_count: item.stats?.diggCount || 0,
-              comment_count: item.stats?.commentCount || 0,
-              repost_count: item.stats?.shareCount || 0,
-              uploader: item.author?.nickname || "",
-              uploader_id: item.author?.id || "",
-              upload_date: item.createTime || "",
-              followers: item.author?.followerCount || 0,
-              following: item.author?.followingCount || 0,
-              likes: item.author?.heartCount || 0,
-              verified: item.author?.verified || false,
+              description: item.desc || item.text || "",
+              thumbnail: item.videoMeta?.coverUrl || "",
+              view_count: item.playCount || 0,
+              like_count: item.diggCount || 0,
+              comment_count: item.commentCount || 0,
+              repost_count: item.shareCount || 0,
+              uploader: item.authorMeta?.nickName || "",
+              uploader_id: item.authorMeta?.id || "",
+              upload_date: item.createTimeISO || item.createTime || "",
+              followers: item.authorMeta?.fans || 0,
+              following: item.authorMeta?.following || 0,
+              likes: item.authorMeta?.heart || 0,
+              verified: item.authorMeta?.verified || false,
             },
           };
         }
