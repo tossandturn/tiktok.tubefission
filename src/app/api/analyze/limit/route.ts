@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
 
-const MAX_GUEST_ANALYZES = 10;
-const MAX_LOGGED_IN_ANALYZES = 10;
+const MAX_GUEST_ANALYZES = 100;
+const MAX_LOGGED_IN_ANALYZES = 100;
 
 // Generate a simple fingerprint from request
 function getFingerprint(req: NextRequest): string {

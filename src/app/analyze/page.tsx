@@ -24,8 +24,8 @@ export default function AnalyzePage() {
   const [limit, setLimit] = useState<AnalyzeLimit>({
     isAuthenticated: false,
     usedAnalyzes: 0,
-    remainingAnalyzes: 1,
-    maxAnalyzes: 1,
+    remainingAnalyzes: 100,
+    maxAnalyzes: 100,
     hasReachedLimit: false,
     needsLogin: false,
   });

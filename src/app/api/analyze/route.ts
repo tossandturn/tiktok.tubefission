@@ -1,11 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { exec } from "child_process";
-import { promisify } from "util";
 
-const execAsync = promisify(exec);
-
-const OPENCLAW_PROXY_URL = process.env.OPENCLAW_PROXY_URL || "http://localhost:3001";
+const APIFY_API_TOKEN = process.env.APIFY_API_TOKEN || "";
+const APIFY_BASE_URL = "https://api.apify.com/v2";
+const TIKTOK_SCRAPER_ACTOR = process.env.APIFY_TIKTOK_SCRAPER_ACTOR || "curious_coder/tiktok-scraper";
 
 /**
  * Parse TikTok URL to extract video ID and username
@@ -22,11 +20,6 @@ function parseTikTokUrl(url: string): { videoId?: string; username?: string; ful
       return { videoId: pathMatch[1], username, fullUsername };
     }
 
-    // Short URL format
-    if (urlObj.hostname.includes("vm.tiktok.com") || urlObj.pathname.startsWith("/t/")) {
-      return { videoId: undefined, username: undefined, fullUsername: undefined };
-    }
-
     return null;
   } catch {
     return null;
@@ -34,85 +27,90 @@ function parseTikTokUrl(url: string): { videoId?: string; username?: string; ful
 }
 
 /**
- * Fetch TikTok video data via Openclaw proxy
+ * Fetch TikTok video data via Apify
  */
-async function fetchViaProxy(url: string): Promise<{
+async function fetchViaApify(url: string): Promise<{
   success: boolean;
   data?: Record<string, unknown>;
   error?: string;
 }> {
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000);
-
-    const response = await fetch(`${OPENCLAW_PROXY_URL}/api/tiktok/analyze`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url }),
-      signal: controller.signal,
-    });
-
-    clearTimeout(timeoutId);
-
-    if (!response.ok) {
-      return { success: false, error: "Proxy returned error" };
-    }
-
-    const data = await response.json();
-    return { success: true, data };
-  } catch (error) {
-    console.error("Proxy fetch error:", error);
-    return { success: false, error: String(error) };
+  if (!APIFY_API_TOKEN) {
+    return { success: false, error: "APIFY_API_TOKEN not configured" };
   }
-}
 
-/**
- * Fetch TikTok video data using yt-dlp (fallback)
- */
-async function fetchTikTokData(url: string): Promise<{
-  id?: string;
-  title?: string;
-  description?: string;
-  thumbnail?: string;
-  duration?: number;
-  view_count?: number;
-  like_count?: number;
-  comment_count?: number;
-  repost_count?: number;
-  uploader?: string;
-  uploader_id?: string;
-  uploader_url?: string;
-  upload_date?: string;
-}> {
   try {
-    // Use yt-dlp to extract video info
-    // --dump-json outputs all metadata as JSON
-    // --no-download skips downloading the video
-    const { stdout } = await execAsync(
-      `yt-dlp --dump-json --no-download "${url}" 2>/dev/null || echo "{}"`,
-      { timeout: 30000 }
+    // Start a scraper run with the video URL
+    const runResponse = await fetch(
+      `${APIFY_BASE_URL}/acts/${TIKTOK_SCRAPER_ACTOR}/runs`,
+      {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${APIFY_API_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          input: {
+            urls: [url],
+            shouldDownloadCovers: false,
+            shouldDownloadVideos: false,
+          },
+        }),
+      }
     );
 
-    const data = JSON.parse(stdout);
+    if (!runResponse.ok) {
+      const errorText = await runResponse.text();
+      return { success: false, error: `Apify API error: ${runResponse.status} - ${errorText}` };
+    }
 
-    return {
-      id: data.id,
-      title: data.title,
-      description: data.description,
-      thumbnail: data.thumbnail,
-      duration: data.duration,
-      view_count: data.view_count,
-      like_count: data.like_count,
-      comment_count: data.comment_count,
-      repost_count: data.repost_count,
-      uploader: data.uploader,
-      uploader_id: data.uploader_id,
-      uploader_url: data.uploader_url,
-      upload_date: data.upload_date,
-    };
+    const runData = await runResponse.json();
+    const runId = runData.data.id;
+
+    // Poll for completion (max 2 minutes)
+    const startTime = Date.now();
+    const maxWaitMs = 2 * 60 * 1000;
+
+    while (Date.now() - startTime < maxWaitMs) {
+      const statusResponse = await fetch(
+        `${APIFY_BASE_URL}/acts/${TIKTOK_SCRAPER_ACTOR}/runs/${runId}`,
+        {
+          headers: { "Authorization": `Bearer ${APIFY_API_TOKEN}` },
+        }
+      );
+
+      const statusData = await statusResponse.json();
+      const status = statusData.data.status;
+
+      if (status === "SUCCEEDED") {
+        // Get dataset items
+        const datasetResponse = await fetch(
+          `${APIFY_BASE_URL}/acts/${TIKTOK_SCRAPER_ACTOR}/runs/${runId}/dataset/items?limit=1`,
+          {
+            headers: { "Authorization": `Bearer ${APIFY_API_TOKEN}` },
+          }
+        );
+
+        const datasetItems = await datasetResponse.json();
+
+        if (datasetItems && datasetItems.length > 0) {
+          return { success: true, data: datasetItems[0] };
+        }
+
+        return { success: false, error: "No data returned from Apify" };
+      }
+
+      if (status === "FAILED") {
+        return { success: false, error: `Apify run failed: ${statusData.data.errorMessage}` };
+      }
+
+      // Wait 3 seconds before checking again
+      await new Promise(resolve => setTimeout(resolve, 3000));
+    }
+
+    return { success: false, error: "Apify run timed out" };
   } catch (error) {
-    console.error("yt-dlp error:", error);
-    return {};
+    console.error("Apify fetch error:", error);
+    return { success: false, error: String(error) };
   }
 }
 
@@ -155,68 +153,35 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // If URL has username, fetch real data
+    // Fetch video data via Apify
     if (parsed.username && parsed.videoId) {
       try {
-        let videoData: Record<string, unknown>;
-        let source = "proxy";
+        console.log("Fetching video data via Apify...");
+        const apifyResult = await fetchViaApify(url);
 
-        // Try Openclaw proxy first
-        console.log("Trying Openclaw proxy...");
-        const proxyResult = await fetchViaProxy(url);
-
-        if (proxyResult.success && proxyResult.data) {
-          console.log("Proxy success, using proxy data");
-          videoData = proxyResult.data;
-        } else {
-          // Fallback to direct yt-dlp
-          console.log("Proxy failed, falling back to yt-dlp:", proxyResult.error);
-          const ytData = await fetchTikTokData(url);
-
-          // Check if yt-dlp returned valid data
-          if (!ytData.id) {
-            return NextResponse.json({
-              success: false,
-              error: "Unable to fetch video data. The video may be private, unavailable, or yt-dlp is not installed.",
-            }, { status: 404 });
-          }
-
-          // Convert yt-dlp format to unified format
-          videoData = {
-            id: ytData.id,
-            title: ytData.title,
-            description: ytData.description,
-            thumbnail: ytData.thumbnail,
-            view_count: ytData.view_count,
-            like_count: ytData.like_count,
-            comment_count: ytData.comment_count,
-            repost_count: ytData.repost_count,
-            uploader: ytData.uploader,
-            uploader_id: ytData.uploader_id,
-            upload_date: ytData.upload_date,
-          };
-          source = "yt-dlp";
-        }
-
-        // Handle unified video data format
-        const id = videoData.id || videoData.videoId || parsed.videoId;
-        const description = String(videoData.description || "");
-        const title = String(videoData.title || description?.split('\n')[0] || "TikTok Video");
-        const thumbnail = String(videoData.thumbnail || videoData.coverUrl || "");
-        const view_count = Number(videoData.view_count || videoData.views || videoData.playCount || 0);
-        const like_count = Number(videoData.like_count || videoData.likes || videoData.diggCount || 0);
-        const comment_count = Number(videoData.comment_count || videoData.comments || videoData.commentCount || 0);
-        const repost_count = Number(videoData.repost_count || videoData.shares || videoData.shareCount || 0);
-        const uploader = String(videoData.uploader || (videoData.author as Record<string, unknown>)?.nickname || parsed.username || "");
-        const uploader_id = String(videoData.uploader_id || (videoData.author as Record<string, unknown>)?.id || "");
-        const upload_date = String(videoData.upload_date || videoData.createTime || "");
-
-        if (!id) {
+        if (!apifyResult.success || !apifyResult.data) {
           return NextResponse.json({
             success: false,
-            error: "Unable to fetch video data. The video may be private, unavailable, or the proxy/yt-dlp is not accessible.",
-          }, { status: 404 });
+            error: apifyResult.error || "Failed to fetch video data from TikTok.",
+          }, { status: 500 });
         }
+
+        const videoData = apifyResult.data;
+
+        // Extract data from Apify response
+        const id = String(videoData.id || parsed.videoId);
+        const description = String(videoData.desc || videoData.text || "");
+        const title = String(videoData.desc || "").split('\n')[0] || "TikTok Video";
+        const thumbnail = String((videoData as Record<string, unknown>).video && typeof (videoData as Record<string, unknown>).video === 'object' ? ((videoData as Record<string, unknown>).video as Record<string, unknown>).cover : "" || "");
+        const stats = (videoData.stats || {}) as Record<string, number>;
+        const view_count = stats.playCount || 0;
+        const like_count = stats.diggCount || 0;
+        const comment_count = stats.commentCount || 0;
+        const repost_count = stats.shareCount || 0;
+        const author = (videoData.author || {}) as Record<string, unknown>;
+        const uploader = String(author.nickname || parsed.username || "");
+        const uploader_id = String(author.id || "");
+        const createTime = String(videoData.createTime || "");
 
         // Get or create the creator
         const creator = await prisma.creator.upsert({
@@ -227,15 +192,19 @@ export async function POST(request: NextRequest) {
             username: parsed.username,
             displayName: uploader || parsed.username,
             avatar: thumbnail,
-            followers: 0,
-            following: 0,
-            likes: 0,
-            isVerified: false,
+            followers: Number(author.followerCount || 0),
+            following: Number(author.followingCount || 0),
+            likes: Number(author.heartCount || 0),
+            isVerified: Boolean(author.verified),
             updatedAt: new Date(),
           },
           update: {
             displayName: uploader || parsed.username,
             avatar: thumbnail,
+            followers: Number(author.followerCount || 0),
+            following: Number(author.followingCount || 0),
+            likes: Number(author.heartCount || 0),
+            isVerified: Boolean(author.verified),
             updatedAt: new Date(),
           },
         });
@@ -266,22 +235,12 @@ export async function POST(request: NextRequest) {
         const comments = String(comment_count || 0);
         const shares = String(repost_count || 0);
 
-        // Parse upload date if available
+        // Parse upload date
         let publishedAt = new Date();
-        if (upload_date) {
+        if (createTime) {
           try {
-            if (typeof upload_date === 'number') {
-              // Unix timestamp in seconds
-              publishedAt = new Date(upload_date * 1000);
-            } else if (upload_date.length === 8) {
-              // Format: YYYYMMDD
-              const year = parseInt(upload_date.substring(0, 4));
-              const month = parseInt(upload_date.substring(4, 6)) - 1;
-              const day = parseInt(upload_date.substring(6, 8));
-              publishedAt = new Date(year, month, day);
-            } else if (upload_date.includes('T')) {
-              // ISO format
-              publishedAt = new Date(upload_date);
+            if (typeof createTime === 'string' && /^\d+$/.test(createTime)) {
+              publishedAt = new Date(parseInt(createTime) * 1000);
             }
           } catch {
             // Use current date if parsing fails
@@ -327,7 +286,7 @@ export async function POST(request: NextRequest) {
           video: video,
           creator: creator,
           cached: false,
-          source: source,
+          source: "apify",
           title: title,
           description: description,
         });
@@ -336,16 +295,15 @@ export async function POST(request: NextRequest) {
         console.error("Fetch error:", fetchError);
         return NextResponse.json({
           success: false,
-          error: "Failed to fetch video data from TikTok. Please ensure the proxy is running or yt-dlp is installed, and the video is public.",
+          error: "Failed to fetch video data from TikTok. Please try again later.",
           details: String(fetchError),
         }, { status: 500 });
       }
     }
 
-    // For short URLs, we can't extract info yet
     return NextResponse.json({
       success: false,
-      error: "Short TikTok URLs are not supported yet. Please use the full URL format: https://www.tiktok.com/@username/video/1234567890",
+      error: "Invalid URL format. Please use the full TikTok URL.",
     }, { status: 400 });
 
   } catch (error) {
