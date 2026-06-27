@@ -7,6 +7,7 @@ import { StructuredData } from "@/components/structured-data";
 import { CountryProvider } from "@/components/country-context";
 import { SessionProvider } from "@/components/session-provider";
 import TikTokAnalyzerBar from "@/components/tiktok-analyzer-bar";
+import { Footer } from "@/components/footer";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -92,9 +93,6 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "https://tiktok.tubefission.com",
   },
-  verification: {
-    google: "your-google-verification-code",
-  },
   category: "technology",
   classification: "Social Media Analytics",
 };
@@ -126,6 +124,7 @@ export default function RootLayout({
             <NavBar />
             <TikTokAnalyzerBar />
             <main className="pt-14">{children}</main>
+            <Footer />
           </CountryProvider>
         </SessionProvider>
       </body>

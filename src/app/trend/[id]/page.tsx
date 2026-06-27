@@ -62,7 +62,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       images: [trend.thumbnail || "/placeholder-trend.png"],
     },
     alternates: {
-      canonical: `https://tictok.tubefission.com/trend/${id}`,
+      canonical: `https://tiktok.tubefission.com/trend/${id}`,
     },
   };
 }
@@ -185,7 +185,7 @@ export default async function TrendPage({ params }: Props) {
     },
     mainEntityOfPage: {
       "@type": "WebPage",
-      "@id": `https://tictok.tubefission.com/trend/${id}`,
+      "@id": `https://tiktok.tubefission.com/trend/${id}`,
     },
   };
 
@@ -195,19 +195,19 @@ export default async function TrendPage({ params }: Props) {
         "@type": "ListItem",
         position: 1,
         name: "Home",
-        item: "https://tictok.tubefission.com",
+        item: "https://tiktok.tubefission.com",
       },
       {
         "@type": "ListItem",
         position: 2,
         name: trend.category,
-        item: `https://tictok.tubefission.com/explore?category=${trend.category}`,
+        item: `https://tiktok.tubefission.com/explore?category=${trend.category}`,
       },
       {
         "@type": "ListItem",
         position: 3,
         name: trend.title,
-        item: `https://tictok.tubefission.com/trend/${id}`,
+        item: `https://tiktok.tubefission.com/trend/${id}`,
       },
     ],
   };

@@ -5,6 +5,7 @@ import { TrendCard } from "@/components/trend-card";
 import { useCountry } from "@/components/country-context";
 import { Flame, ArrowUpRight, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { trends as staticTrends } from "@/lib/data";
 
 interface Trend {
   id: string;
@@ -44,11 +45,23 @@ export default function TrendingPage() {
       try {
         const res = await fetch(`/api/trends?country=${selectedCountry.code}&limit=50`);
         const json = await res.json();
-        if (json.data) {
+        if (json.data && json.data.length > 0) {
           setTrends(json.data);
+        } else {
+          // Fallback to static data
+          setTrends(staticTrends.map(t => ({
+            ...t,
+            slug: t.id,
+            tags: t.tags?.map((tag: string) => ({ tag: { name: tag.replace('#', '') } })) || [],
+          })));
         }
-      } catch (err) {
-        console.error("Failed to fetch trends:", err);
+      } catch {
+        // API unavailable — use static data
+        setTrends(staticTrends.map(t => ({
+          ...t,
+          slug: t.id,
+          tags: t.tags?.map((tag: string) => ({ tag: { name: tag.replace('#', '') } })) || [],
+        })));
       } finally {
         setLoading(false);
       }
