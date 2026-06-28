@@ -18,12 +18,6 @@ export async function GET(
     // Check if creator exists in database
     const existingCreator = await prisma.creator.findUnique({
       where: { username },
-      include: {
-        trends: {
-          include: { trend: true },
-          take: 6,
-        },
-      },
     });
 
     // Videos will be empty for now (can be populated separately)
@@ -158,9 +152,6 @@ export async function GET(
       // Return with videos
       const creatorWithVideos = await prisma.creator.findUnique({
         where: { username },
-        include: {
-          trends: { include: { trend: true }, take: 6 },
-        },
       });
 
       return NextResponse.json({
