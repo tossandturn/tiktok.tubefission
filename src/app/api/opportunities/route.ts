@@ -9,7 +9,6 @@ export async function GET() {
       OR: [{ isViral: true }, { isNew: true }],
       aiScore: { gte: 60 },
     },
-    include: { tags: { include: { tag: true } } },
     orderBy: [{ aiScore: "desc" }, { growthRate: "desc" }],
     take: 10,
   });

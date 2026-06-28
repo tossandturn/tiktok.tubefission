@@ -34,6 +34,9 @@ model Creator {
   growthVelocity     Float   @default(0) // 成长速度
   momentumScore      Float? // 动量评分
   predictedGrowth7d  Float? // 7天预测增长
+  predictedGrowth30d Float? // 30天预测增长
+  avgViews           Float   @default(0) // 平均播放量
+  viralVideoRate     Float   @default(0) // 爆款视频比例
 
   // 元数据
   lastAnalyzed DateTime?
@@ -43,6 +46,7 @@ model Creator {
   // 关系
   videos         Video[]
   dailySnapshots CreatorDailySnapshot[]
+  watchlist      Watchlist[]
 
   @@index([username])
   @@index([niche])
@@ -70,6 +74,9 @@ model Video {
   // 计算指标
   engagementRate Float @default(0) // 互动率
   shareRate      Float @default(0) // 分享率
+
+  // 视频元数据
+  duration Int? // 视频时长（秒）
 
   // 潜力评分（核心功能）
   viralScore  Float   @default(0) // 爆款潜力分 (0-100)
@@ -129,6 +136,18 @@ model Trend {
   isRising      Boolean   @default(false)
   predictedPeak DateTime? // 预测峰值时间
 
+  // AI & Analysis fields
+  isViral          Boolean  @default(false)
+  isNew            Boolean  @default(false)
+  aiScore          Float    @default(0)
+  aiPrediction     String?
+  opportunityScore Float    @default(0)
+  whyItBlowsUp     String?
+  actionTime       String?
+  competition      String?
+  creatorFit       Float?
+  tags             String[]
+
   // 时间
   publishedAt   DateTime  @default(now())
   trendingSince DateTime?
@@ -137,6 +156,7 @@ model Trend {
   // 关系
   videos       VideoTrend[]
   VideoHashtag VideoHashtag[]
+  watchlist    Watchlist[]
 
   @@unique([name, type])
   @@index([type])
@@ -154,9 +174,26 @@ model Hashtag {
   country   String   @default("US")
   scrapedAt DateTime @default(now())
 
+  // Analytics fields
+  growthRate      Float  @default(0)
+  velocity        Float  @default(0)
+  viralScore      Float  @default(0)
+  engagementRate  Float  @default(0)
+  avgViews        Float  @default(0)
+  category        String?
+  isRising        Boolean @default(false)
+  relatedHashtags String[] @default([])
+
+  // Relations
+  dailySnapshots HashtagDailySnapshot[]
+  watchlist      Watchlist[]
+
   @@unique([name, country])
   @@index([name])
   @@index([views])
+  @@index([isRising])
+  @@index([viralScore])
+  @@index([growthRate])
 }
 
 // ============================================
@@ -197,6 +234,9 @@ model VideoDailySnapshot {
   // 增长指标
   viewsGrowth    Float @default(0)
   likesGrowth    Float @default(0)
+  sharesGrowth   Float @default(0)
+  commentsGrowth Float @default(0)
+  trendScore     Float @default(0)
   engagementRate Float
   viralScore     Float
 
@@ -209,9 +249,18 @@ model VideoDailySnapshot {
 model HashtagDailySnapshot {
   id        String   @id @default(cuid())
   hashtagId String
+  hashtag   Hashtag  @relation(fields: [hashtagId], references: [id], onDelete: Cascade)
   views     String   @default("0")
   videos    Int      @default(0)
   growth    Float    @default(0)
+
+  // Additional fields used by scraper
+  viewCount   BigInt @default(0)
+  videoCount  Int   @default(0)
+  usageCount  BigInt @default(0)
+  growthRate  Float @default(0)
+  trendScore  Float @default(0)
+
   collectedAt DateTime @default(now())
 
   @@index([hashtagId])
@@ -222,20 +271,23 @@ model HashtagDailySnapshot {
 // 音乐/声音
 // ============================================
 model Sound {
-  id            String   @id @default(cuid())
+  id            String    @id @default(cuid())
+  tiktokId      String?   @unique
   title         String
   author        String?
-  uses          Int      @default(0)
-  views         String   @default("0")
-  growthRate    Float    @default(0)
-  viralScore    Float    @default(0)
-  isViral       Boolean  @default(false)
+  uses          Int       @default(0)
+  views         String    @default("0")
+  growthRate    Float     @default(0)
+  viralScore    Float     @default(0)
+  isViral       Boolean   @default(false)
   thumbnail     String?
-  scrapedAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  trendingSince DateTime?
+  scrapedAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   @@index([uses])
   @@index([viralScore])
+  @@index([tiktokId])
 }
 
 // ============================================
@@ -256,6 +308,7 @@ model VideoTrend {
   id      String @id @default(cuid())
   videoId String
   trendId String
+  views   BigInt @default(0)
   video   Video  @relation(fields: [videoId], references: [id], onDelete: Cascade)
   trend   Trend  @relation(fields: [trendId], references: [id], onDelete: Cascade)
 
@@ -305,6 +358,28 @@ enum Plan {
   FREE
   PRO
   ENTERPRISE
+}
+
+// ============================================
+// 用户追踪列表
+// ============================================
+model Watchlist {
+  id        String   @id @default(cuid())
+  userId    String
+  trendId   String?
+  hashtagId String?
+  creatorId String?
+  notes     String?
+  createdAt DateTime @default(now())
+
+  trend   Trend?   @relation(fields: [trendId], references: [id], onDelete: Cascade)
+  hashtag Hashtag? @relation(fields: [hashtagId], references: [id], onDelete: Cascade)
+  creator Creator? @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([trendId])
+  @@index([hashtagId])
+  @@index([creatorId])
 }
 
 // ============================================
@@ -374,8 +449,11 @@ model ScrapeLog {
   count     Int      @default(0)
   error     String?
   metadata  Json?
+  startedAt DateTime @default(now())
+  endedAt   DateTime?
   createdAt DateTime @default(now())
 
   @@index([type])
   @@index([createdAt])
+  @@index([startedAt])
 }

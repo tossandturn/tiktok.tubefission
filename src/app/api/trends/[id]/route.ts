@@ -12,21 +12,7 @@ export async function GET(
   const trend = await prisma.trend.findUnique({
     where: { slug: id },
     include: {
-      tags: { include: { tag: true } },
       videos: { take: 5, orderBy: { views: "desc" } },
-      trendCreators: {
-        include: {
-          creator: {
-            select: {
-              id: true,
-              username: true,
-              displayName: true,
-              avatar: true,
-              followers: true,
-            },
-          },
-        },
-      },
     },
   });
 

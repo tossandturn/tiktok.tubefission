@@ -25,7 +25,6 @@ export async function GET(request: Request) {
             { description: { contains: q, mode: "insensitive" } },
           ],
         },
-        include: { tags: { include: { tag: true } } },
         take: limit,
         orderBy: { aiScore: "desc" },
       }),

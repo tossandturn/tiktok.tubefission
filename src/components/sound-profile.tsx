@@ -116,12 +116,12 @@ export function SoundProfile({ sound }: SoundProfileProps) {
               <div className="p-5 bg-white/[0.02] border border-white/10 rounded-xl">
                 <div className="flex items-center gap-2 text-white/60 text-sm mb-2">
                   <ArrowUpRight className="w-4 h-4" />
-                  Velocity
+                  Growth
                 </div>
                 <div className="text-2xl font-bold text-tiktok-cyan">
-                  {sound.velocity?.toFixed(1) || "N/A"}
+                  {sound.growthRate?.toFixed(1) || "N/A"}%
                 </div>
-                <div className="text-xs text-white/40">Score /100</div>
+                <div className="text-xs text-white/40">Rate</div>
               </div>
 
               <div className="p-5 bg-white/[0.02] border border-white/10 rounded-xl">

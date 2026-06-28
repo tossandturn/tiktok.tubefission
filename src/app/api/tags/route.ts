@@ -18,13 +18,6 @@ export async function GET(request: Request) {
     // Get trends with their tags for the country
     const trends = await prisma.trend.findMany({
       where,
-      include: {
-        tags: {
-          include: {
-            tag: true,
-          },
-        },
-      },
       orderBy: [
         { viralScore: "desc" },
         { growthRate: "desc" },
@@ -36,8 +29,7 @@ export async function GET(request: Request) {
     const tagMap = new Map<string, { name: string; count: number; growth: number }>();
 
     trends.forEach((trend) => {
-      trend.tags.forEach((trendTag) => {
-        const tagName = trendTag.tag.name;
+      (trend.tags || []).forEach((tagName: string) => {
         const existing = tagMap.get(tagName);
 
         if (existing) {

@@ -27,7 +27,6 @@ export async function GET(request: Request) {
     const [trends, total] = await Promise.all([
       prisma.trend.findMany({
         where,
-        include: { tags: { include: { tag: true } } },
         orderBy: rising === "true" ? [{ growthRate: "desc" }, { aiScore: "desc" }] : [{ aiScore: "desc" }, { growthRate: "desc" }],
         take: limit,
         skip: offset,
@@ -52,7 +51,7 @@ export async function GET(request: Request) {
     const page = filtered.slice(offset, offset + limit).map((t) => ({
       ...t,
       slug: t.id,
-      tags: t.tags.map((tag: string) => ({ tag: { name: tag.replace(/#/g, "") } })),
+      tags: (t.tags || []).map((tag: string) => tag.replace(/#/g, "")),
     }));
 
     return NextResponse.json({

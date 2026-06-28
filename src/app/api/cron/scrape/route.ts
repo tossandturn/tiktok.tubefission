@@ -151,20 +151,24 @@ async function saveVideoWithSnapshot(
   likes: string,
   url?: string
 ) {
+  const parsedViews = BigInt(Math.floor(parseNumericValue(views)));
+  const parsedLikes = BigInt(Math.floor(parseNumericValue(likes)));
+
   // Upsert video
   const video = await prisma.video.upsert({
     where: { tiktokId: videoId },
     update: {
-      views,
-      likes,
+      views: parsedViews,
+      likes: parsedLikes,
       scrapedAt: new Date(),
     },
     create: {
       trendId,
       tiktokId: videoId,
       url,
-      views,
-      likes,
+      views: parsedViews,
+      likes: parsedLikes,
+      publishedAt: new Date(),
     },
   });
 
@@ -202,6 +206,8 @@ async function saveVideoWithSnapshot(
       sharesGrowth: 0,
       commentsGrowth: 0,
       trendScore,
+      engagementRate: 0,
+      viralScore: 0,
     },
   });
 
@@ -242,19 +248,7 @@ async function calculateOpportunityScores(country: string) {
       data: { viralScore: latestSnapshot.trendScore },
     });
 
-    // Store opportunity score
-    await prisma.opportunityScore.create({
-      data: {
-        targetType: "hashtag",
-        targetId: hashtag.id,
-        name: hashtag.name,
-        demandScore: views + growth * 1000,
-        competitionScore: creatorCount + videoCount,
-        opportunityScore,
-        country,
-        expiresAt: new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000),
-      },
-    });
+    // Note: Opportunity scores are stored via hashtag.opportunityScore or can be calculated on demand
   }
 }
 
@@ -267,13 +261,16 @@ async function updateTrendScores(country: string) {
     include: {
       videos: {
         include: {
-          dailySnapshots: {
-            orderBy: { collectedAt: "desc" },
-            take: 1,
+          video: {
+            include: {
+              dailySnapshots: {
+                orderBy: { collectedAt: "desc" },
+                take: 1,
+              },
+            },
           },
         },
       },
-      trendCreators: true,
     },
   });
 
@@ -282,8 +279,12 @@ async function updateTrendScores(country: string) {
     let videoCount = 0;
     let totalViews = 0;
     let totalLikes = 0;
+    const creatorIds = new Set<string>();
 
-    for (const video of trend.videos) {
+    for (const videoTrend of trend.videos) {
+      const video = videoTrend.video;
+      if (!video) continue;
+
       const latestSnapshot = video.dailySnapshots[0];
       if (latestSnapshot) {
         totalTrendScore += latestSnapshot.trendScore;
@@ -291,10 +292,15 @@ async function updateTrendScores(country: string) {
         totalLikes += Number(latestSnapshot.likes);
         videoCount++;
       }
+
+      // Track unique creators by creatorId
+      if (video.creatorId) {
+        creatorIds.add(video.creatorId);
+      }
     }
 
     const avgTrendScore = videoCount > 0 ? totalTrendScore / videoCount : 0;
-    const creatorCount = trend.trendCreators.length;
+    const creatorCount = creatorIds.size;
 
     const opportunityScore = calculateOpportunityScore(
       totalViews,

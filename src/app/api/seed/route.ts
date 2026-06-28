@@ -86,7 +86,11 @@ export async function POST(req: Request) {
       const trend = await prisma.trend.upsert({
         where: { slug: trendData.slug },
         update: trendData,
-        create: trendData,
+        create: {
+          ...trendData,
+          name: trendData.title,
+          type: "HASHTAG",
+        },
       });
       results.push(trend);
     }

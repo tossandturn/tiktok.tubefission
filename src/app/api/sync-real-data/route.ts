@@ -205,6 +205,8 @@ async function processVideos(videos: ApifyVideoData[], category: string): Promis
 
     const trendData = {
       slug: `${tagName}-trend-${Date.now()}`,
+      name: tagName,
+      type: "HASHTAG" as const,
       title: `${tagName.charAt(0).toUpperCase() + tagName.slice(1)} Trend`,
       description: `Trending content with #${tagName}. ${tagVideos.length} videos analyzed.`,
       category: category,
@@ -217,7 +219,6 @@ async function processVideos(videos: ApifyVideoData[], category: string): Promis
       isNew: Math.random() > 0.5,
       viralScore: viralScore,
       opportunityScore: Math.round(viralScore * 0.9),
-      engagement: Math.round(avgEngagement),
       avgViews: formatViews(Math.round(totalViews / tagVideos.length)),
       competition: viralScore > 80 ? "HIGH" : viralScore > 60 ? "MEDIUM" : "LOW",
       velocity: Math.round(Math.random() * 100),
@@ -251,17 +252,18 @@ async function processVideos(videos: ApifyVideoData[], category: string): Promis
             tiktokId: video.id,
             url: video.webVideoUrl || `https://www.tiktok.com/@${video.authorMeta?.name}/video/${video.id}`,
             thumbnail: video.videoMeta?.coverUrl || "",
-            views: String(video.stats?.playCount || 0),
-            likes: String(video.stats?.diggCount || 0),
-            comments: String(video.stats?.commentCount || 0),
-            shares: String(video.stats?.shareCount || 0),
+            views: BigInt(video.stats?.playCount || 0),
+            likes: BigInt(video.stats?.diggCount || 0),
+            comments: BigInt(video.stats?.commentCount || 0),
+            shares: BigInt(video.stats?.shareCount || 0),
             viralScore: Math.round((video.stats?.diggCount || 0) / (video.stats?.playCount || 1) * 100),
+            publishedAt: new Date(),
           },
           update: {
-            views: String(video.stats?.playCount || 0),
-            likes: String(video.stats?.diggCount || 0),
-            comments: String(video.stats?.commentCount || 0),
-            shares: String(video.stats?.shareCount || 0),
+            views: BigInt(video.stats?.playCount || 0),
+            likes: BigInt(video.stats?.diggCount || 0),
+            comments: BigInt(video.stats?.commentCount || 0),
+            shares: BigInt(video.stats?.shareCount || 0),
           },
         });
       }

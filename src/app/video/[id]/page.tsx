@@ -37,18 +37,24 @@ export async function generateMetadata({ params }: VideoPageProps): Promise<Meta
     const { id } = await params;
     const video = await prisma.video.findUnique({
       where: { id },
-      include: { trend: true },
     });
 
     if (!video) {
       return { title: "Video Not Found | TikTok Intelligence" };
     }
 
+    // Fetch trend separately since Video model has no direct trend relation
+    let trendTitle = "TikTok Video";
+    if (video.trendId) {
+      const trend = await prisma.trend.findUnique({ where: { id: video.trendId }, select: { title: true } });
+      if (trend) trendTitle = trend.title;
+    }
+
     return {
-      title: `Video Analysis: ${video.trend?.title || "TikTok Video"} | TikTok Intelligence`,
-      description: `Analyze viral TikTok video performance. ${formatNumber(video.views)} views, engagement metrics, and AI-powered insights.`,
+      title: `Video Analysis: ${trendTitle} | TikTok Intelligence`,
+      description: `Analyze viral TikTok video performance. ${formatNumber(Number(video.views))} views, engagement metrics, and AI-powered insights.`,
       openGraph: {
-        title: `Video Analysis - ${formatNumber(video.views)} views`,
+        title: `Video Analysis - ${formatNumber(Number(video.views))} views`,
         description: `TikTok video analytics and viral insights`,
         images: video.thumbnail ? [{ url: video.thumbnail }] : undefined,
       },
@@ -78,11 +84,19 @@ export default async function VideoPage({ params }: VideoPageProps) {
   try {
     const video = await prisma.video.findUnique({
       where: { id },
-      include: { trend: { include: { tags: { include: { tag: true } } } } },
     });
 
     if (!video) {
       notFound();
+    }
+
+    // Fetch trend data separately since Video model has no direct trend relation
+    let trendData: { title: string; slug: string; description: string | null } | null = null;
+    if (video.trendId) {
+      trendData = await prisma.trend.findUnique({
+        where: { id: video.trendId },
+        select: { title: true, slug: true, description: true },
+      });
     }
 
     // Get related videos from same trend
@@ -156,15 +170,15 @@ export default async function VideoPage({ params }: VideoPageProps) {
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
             <h1 className="text-xl font-bold text-white mb-2">
-              {video.trend?.title || "TikTok Video Analysis"}
+              {trendData?.title || "TikTok Video Analysis"}
             </h1>
             <div className="flex items-center gap-2 mb-3">
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#ff0050] to-[#ff4080] flex items-center justify-center">
                 <User className="w-4 h-4 text-white" />
               </div>
-              <span className="text-zinc-400 text-sm">@{video.trend?.slug || "creator"}</span>
+              <span className="text-zinc-400 text-sm">@{trendData?.slug || "creator"}</span>
             </div>
-            <p className="text-zinc-500 text-sm leading-relaxed">{video.trend?.description}</p>
+            <p className="text-zinc-500 text-sm leading-relaxed">{trendData?.description}</p>
           </div>
           <div className="flex gap-2">
             <WatchlistButton type="trend" id={video.trendId || ""} variant="icon" />
@@ -214,16 +228,16 @@ export default async function VideoPage({ params }: VideoPageProps) {
               id: video.id,
               url: video.url ?? undefined,
               tiktokId: video.tiktokId ?? undefined,
-              views: video.views,
-              likes: video.likes || "0",
-              comments: video.comments,
-              shares: video.shares,
-              author: video.trend?.slug || "creator",
-              description: video.trend?.description || "",
-              duration: video.duration ?? undefined,
+              views: video.views.toString(),
+              likes: video.likes?.toString() || "0",
+              comments: video.comments?.toString(),
+              shares: video.shares?.toString(),
+              author: trendData?.slug || "creator",
+              description: trendData?.description || "",
+              duration: video.duration?.toString(),
               viralScore: video.viralScore,
               engagementRate: Number(engagement),
-              trend: video.trend
+              trend: trendData ? { title: trendData.title, category: undefined } : undefined
             }}
             velocity={views / 30}
           />
@@ -360,7 +374,7 @@ export default async function VideoPage({ params }: VideoPageProps) {
                 <div className="absolute bottom-0 left-0 right-0 p-3">
                   <div className="flex items-center gap-1 text-white text-xs">
                     <Eye className="w-3 h-3" />
-                    {formatNumber(v.views)}
+                    {formatNumber(Number(v.views))}
                   </div>
                 </div>
               </Link>

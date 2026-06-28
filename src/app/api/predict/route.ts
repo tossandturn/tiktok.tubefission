@@ -12,7 +12,6 @@ export async function POST(request: Request) {
     if (trendId) {
       const trend = await prisma.trend.findUnique({
         where: { id: trendId },
-        include: { tags: { include: { tag: true } } },
       });
 
       if (!trend) {
@@ -21,12 +20,12 @@ export async function POST(request: Request) {
 
       const analysis = await analyzeTrend({
         title: trend.title,
-        description: trend.description,
-        category: trend.category,
+        description: trend.description ?? "",
+        category: trend.category ?? "",
         growthRate: trend.growthRate,
         views: trend.views,
         creators: trend.creators,
-        tags: trend.tags.map((t: { tag: { name: string } }) => t.tag.name),
+        tags: trend.tags ?? [],
       });
 
       // Cache AI result

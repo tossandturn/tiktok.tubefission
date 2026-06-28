@@ -26,7 +26,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   try {
     trend = await prisma.trend.findUnique({
       where: { slug: id },
-      include: { tags: { include: { tag: true } } },
     });
   } catch {
     // Database unavailable — try static data
@@ -102,7 +101,6 @@ export default async function TrendPage({ params }: Props) {
   try {
     trend = await prisma.trend.findUnique({
       where: { slug: id },
-      include: { tags: { include: { tag: true } } },
     });
   } catch {
     // Database unavailable — will try static data below
@@ -164,7 +162,6 @@ export default async function TrendPage({ params }: Props) {
           category: trend.category,
           slug: { not: id },
         },
-        include: { tags: { include: { tag: true } } },
         take: 3,
         orderBy: { viralScore: "desc" },
       });

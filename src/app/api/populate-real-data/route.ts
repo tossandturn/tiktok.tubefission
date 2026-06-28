@@ -140,6 +140,8 @@ export async function POST(req: NextRequest) {
 
       const trendData = {
         slug: `real-${tagName}-${Date.now()}`,
+        name: tagName,
+        type: "HASHTAG" as const,
         title: `#${tagName.charAt(0).toUpperCase() + tagName.slice(1)} (Real Data)`,
         description: `Real trending content with #${tagName}. ${videos.length} videos from actual TikTok API data with ${formatViews(totalViews)} total views.`,
         category: tagName === "fyp" ? "Trending" : tagName === "funny" ? "Comedy" : "General",
@@ -152,7 +154,6 @@ export async function POST(req: NextRequest) {
         isNew: true,
         viralScore: viralScore,
         opportunityScore: Math.round(viralScore * 0.9),
-        engagement: Math.round(avgEngagement),
         avgViews: formatViews(Math.round(totalViews / videos.length)),
         competition: viralScore > 80 ? "HIGH" : viralScore > 60 ? "MEDIUM" : "LOW",
         velocity: Math.round(Math.random() * 100),
@@ -181,18 +182,18 @@ export async function POST(req: NextRequest) {
               tiktokId: video.id,
               url: video.webVideoUrl,
               thumbnail: video.videoMeta?.coverUrl || "",
-              views: String(video.playCount || 0),
-              likes: String(video.diggCount || 0),
-              comments: String(video.commentCount || 0),
-              shares: String(video.shareCount || 0),
+              views: BigInt(video.playCount || 0),
+              likes: BigInt(video.diggCount || 0),
+              comments: BigInt(video.commentCount || 0),
+              shares: BigInt(video.shareCount || 0),
               viralScore: Math.round((video.diggCount || 0) / (video.playCount || 1) * 100),
               publishedAt: new Date(video.createTimeISO),
             },
             update: {
-              views: String(video.playCount || 0),
-              likes: String(video.diggCount || 0),
-              comments: String(video.commentCount || 0),
-              shares: String(video.shareCount || 0),
+              views: BigInt(video.playCount || 0),
+              likes: BigInt(video.diggCount || 0),
+              comments: BigInt(video.commentCount || 0),
+              shares: BigInt(video.shareCount || 0),
             },
           });
           stats.videos++;
