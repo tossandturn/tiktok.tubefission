@@ -11,36 +11,36 @@ datasource db {
 // 核心模型：创作者
 // ============================================
 model Creator {
-  id              String   @id @default(cuid())
-  username        String   @unique
-  displayName     String
-  avatar          String?
-  bio             String?
+  id          String  @id @default(cuid())
+  username    String  @unique
+  displayName String
+  avatar      String?
+  bio         String?
 
   // 粉丝数据
-  followers       Int      @default(0)
-  following       Int      @default(0)
-  likes           Int      @default(0)
+  followers Int @default(0)
+  following Int @default(0)
+  likes     Int @default(0)
 
   // 账号信息
-  tiktokId        String?  @unique
-  niche           String?  // 领域分类
-  country         String   @default("US")
-  isVerified      Boolean  @default(false)
+  tiktokId   String? @unique
+  niche      String? // 领域分类
+  country    String  @default("US")
+  isVerified Boolean @default(false)
 
   // 综合评分（每日更新）
-  accountScore    Float    @default(0)    // 账号价值总分
-  engagementRate  Float    @default(0)    // 平均互动率
-  growthVelocity  Float    @default(0)    // 成长速度
+  accountScore   Float @default(0) // 账号价值总分
+  engagementRate Float @default(0) // 平均互动率
+  growthVelocity Float @default(0) // 成长速度
 
   // 元数据
-  lastAnalyzed    DateTime?
-  updatedAt       DateTime @updatedAt
-  createdAt       DateTime @default(now())
+  lastAnalyzed DateTime?
+  updatedAt    DateTime  @updatedAt
+  createdAt    DateTime  @default(now())
 
   // 关系
-  videos          Video[]
-  dailySnapshots  CreatorDailySnapshot[]
+  videos         Video[]
+  dailySnapshots CreatorDailySnapshot[]
 
   @@index([username])
   @@index([niche])
@@ -53,41 +53,42 @@ model Creator {
 // 核心模型：视频
 // ============================================
 model Video {
-  id              String   @id @default(cuid())
-  tiktokId        String?  @unique
-  url             String?
-  thumbnail       String?
-  caption         String?  // 视频文案
+  id        String  @id @default(cuid())
+  tiktokId  String? @unique
+  url       String?
+  thumbnail String?
+  caption   String? // 视频文案
 
   // 核心指标
-  views           BigInt   @default(0)
-  likes           BigInt   @default(0)
-  comments        BigInt   @default(0)
-  shares          BigInt   @default(0)
+  views    BigInt @default(0)
+  likes    BigInt @default(0)
+  comments BigInt @default(0)
+  shares   BigInt @default(0)
 
   // 计算指标
-  engagementRate  Float  @default(0)     // 互动率
-  shareRate       Float   @default(0)     // 分享率
+  engagementRate Float @default(0) // 互动率
+  shareRate      Float @default(0) // 分享率
 
   // 潜力评分（核心功能）
-  viralScore      Float   @default(0)     // 爆款潜力分 (0-100)
-  isPotential     Boolean @default(false) // 是否潜力视频
-  isViral         Boolean @default(false)  // 是否已爆
+  viralScore  Float   @default(0) // 爆款潜力分 (0-100)
+  isPotential Boolean @default(false) // 是否潜力视频
+  isViral     Boolean @default(false) // 是否已爆
 
   // 增速指标（用于预测）
-  viewVelocity    Float   @default(0)     // 播放量增速
-  engagementVelocity Float @default(0)    // 互动增速
+  viewVelocity       Float @default(0) // 播放量增速
+  engagementVelocity Float @default(0) // 互动增速
 
   // 时间
-  publishedAt     DateTime
-  scrapedAt       DateTime @default(now())
+  publishedAt DateTime
+  scrapedAt   DateTime @default(now())
 
   // 关系
-  creatorId       String?
-  creator         Creator? @relation(fields: [creatorId], references: [id])
+  creatorId String?
+  creator   Creator? @relation(fields: [creatorId], references: [id])
 
-  hashtags        VideoHashtag[]
-  dailySnapshots  VideoDailySnapshot[]
+  hashtags       VideoHashtag[]
+  dailySnapshots VideoDailySnapshot[]
+  VideoTrend     VideoTrend[]
 
   @@index([creatorId])
   @@index([viralScore])
@@ -100,27 +101,28 @@ model Video {
 // 核心模型：趋势（音乐/话题/挑战）
 // ============================================
 model Trend {
-  id              String   @id @default(cuid())
-  name            String
-  type            TrendType // MUSIC, HASHTAG, CHALLENGE
+  id   String    @id @default(cuid())
+  name String
+  type TrendType // MUSIC, HASHTAG, CHALLENGE
 
   // 趋势指标
-  growthRate      Float    @default(0)
-  velocity        Float    @default(0)     // 上升速度
-  saturation      Float    @default(0)     // 饱和度 (0-100)
-  volume          Int      @default(0)     // 总视频数
+  growthRate Float @default(0)
+  velocity   Float @default(0) // 上升速度
+  saturation Float @default(0) // 饱和度 (0-100)
+  volume     Int   @default(0) // 总视频数
 
   // 预测
-  viralScore      Float    @default(0)
-  isRising        Boolean  @default(false)
-  predictedPeak   DateTime?                // 预测峰值时间
+  viralScore    Float     @default(0)
+  isRising      Boolean   @default(false)
+  predictedPeak DateTime? // 预测峰值时间
 
   // 时间
-  trendingSince   DateTime?
-  updatedAt       DateTime @updatedAt
+  trendingSince DateTime?
+  updatedAt     DateTime  @updatedAt
 
   // 关系
-  videos          VideoTrend[]
+  videos       VideoTrend[]
+  VideoHashtag VideoHashtag[]
 
   @@unique([name, type])
   @@index([type])
@@ -132,44 +134,44 @@ model Trend {
 // 每日快照：追踪历史数据
 // ============================================
 model CreatorDailySnapshot {
-  id              String   @id @default(cuid())
-  creatorId       String
-  creator         Creator  @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  id        String  @id @default(cuid())
+  creatorId String
+  creator   Creator @relation(fields: [creatorId], references: [id], onDelete: Cascade)
 
   // 当日数据
-  followers       Int
-  following       Int
-  likes           Int
-  engagementRate  Float
+  followers      Int
+  following      Int
+  likes          Int
+  engagementRate Float
 
   // 成长指标
-  followerGrowth  Float    @default(0)   // 粉丝增长率
-  trendScore      Float    @default(0)
+  followerGrowth Float @default(0) // 粉丝增长率
+  trendScore     Float @default(0)
 
-  collectedAt     DateTime @default(now())
+  collectedAt DateTime @default(now())
 
   @@index([creatorId])
   @@index([collectedAt])
 }
 
 model VideoDailySnapshot {
-  id              String   @id @default(cuid())
-  videoId         String
-  video           Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  id      String @id @default(cuid())
+  videoId String
+  video   Video  @relation(fields: [videoId], references: [id], onDelete: Cascade)
 
   // 当日数据
-  views           BigInt
-  likes           BigInt
-  comments        BigInt
-  shares          BigInt
+  views    BigInt
+  likes    BigInt
+  comments BigInt
+  shares   BigInt
 
   // 增长指标
-  viewsGrowth     Float    @default(0)
-  likesGrowth     Float    @default(0)
-  engagementRate  Float
-  viralScore      Float
+  viewsGrowth    Float @default(0)
+  likesGrowth    Float @default(0)
+  engagementRate Float
+  viralScore     Float
 
-  collectedAt     DateTime @default(now())
+  collectedAt DateTime @default(now())
 
   @@index([videoId])
   @@index([collectedAt])
@@ -190,11 +192,11 @@ model VideoHashtag {
 }
 
 model VideoTrend {
-  id        String @id @default(cuid())
-  videoId   String
-  trendId   String
-  video     Video  @relation(fields: [videoId], references: [id], onDelete: Cascade)
-  trend     Trend  @relation(fields: [trendId], references: [id], onDelete: Cascade)
+  id      String @id @default(cuid())
+  videoId String
+  trendId String
+  video   Video  @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  trend   Trend  @relation(fields: [trendId], references: [id], onDelete: Cascade)
 
   @@index([videoId])
   @@index([trendId])
@@ -204,22 +206,22 @@ model VideoTrend {
 // 用户系统
 // ============================================
 model User {
-  id            String   @id @default(cuid())
-  email         String   @unique
-  username      String   @unique
-  passwordHash  String
+  id           String @id @default(cuid())
+  email        String @unique
+  username     String @unique
+  passwordHash String
 
   // 用户追踪的创作者
   trackedCreators String[] // 存储creator usernames
 
   // 订阅
-  plan          Plan     @default(FREE)
+  plan Plan @default(FREE)
 
   // 元数据
-  emailVerified Boolean  @default(false)
+  emailVerified Boolean   @default(false)
   lastLogin     DateTime?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 }
 
 // ============================================
@@ -242,13 +244,13 @@ enum Plan {
 // 日志记录
 // ============================================
 model ScrapeLog {
-  id          String   @id @default(cuid())
-  type        String   // scrape类型
-  status      String   // success/error
-  count       Int      @default(0)
-  error       String?
-  metadata    Json?
-  createdAt   DateTime @default(now())
+  id        String   @id @default(cuid())
+  type      String // scrape类型
+  status    String // success/error
+  count     Int      @default(0)
+  error     String?
+  metadata  Json?
+  createdAt DateTime @default(now())
 
   @@index([type])
   @@index([createdAt])
