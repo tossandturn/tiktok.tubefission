@@ -269,6 +269,18 @@ model Session {
   @@index([token])
 }
 
+model EmailVerification {
+  id        String    @id @default(cuid())
+  userId    String
+  token     String    @unique
+  expiresAt DateTime
+  verifiedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@index([token])
+}
+
 model DailyAnalyzeLimit {
   id        String @id @default(cuid())
   userId    String?
