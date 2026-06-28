@@ -7,560 +7,249 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Trend {
-  id                   String   @id @default(cuid())
-  slug                 String   @unique
-  title                String
-  description          String
-  category             String
-  country              String   @default("US")
-  growthRate           Float    @default(0)
-  views                String   @default("0")
-  creators             Int      @default(0)
-  thumbnail            String?
-  isViral              Boolean  @default(false)
-  isNew                Boolean  @default(false)
-  velocity             Float    @default(0)
-  saturation           Float    @default(0)
-  creatorFit           Float    @default(0)
-  engagement           Float    @default(0)
-  avgViews             String   @default("0")
-  competition          String   @default("LOW")
-  viralScore           Float    @default(0)
-  opportunityScore     Float    @default(0)
-  whyItBlowsUp        String?
-  peakExpected         String?
-  urgency              String   @default("MEDIUM")
-  actionTime           String?
-  suggestedTitle       String?
-  creatorsUploaded     Int      @default(0)
-  aiPrediction         String?
-  aiScore              Float?
-  // AI Prediction Fields
-  predictedEngagement Int?
-  momentumScore        Float?
-  trendForecast7d      Float?
-  trendForecast30d     Float?
-  viralProbability     Float?   @default(0)
-  peakTime             DateTime?
-  // Metadata
-  publishedAt          DateTime @default(now())
-  updatedAt            DateTime @updatedAt
-
-  tags          TrendTag[]
-  videos        Video[]
-  trendCreators TrendCreator[]
-  watchlists    Watchlist[]
-
-  @@index([category])
-  @@index([country])
-  @@index([isViral])
-  @@index([isNew])
-  @@index([publishedAt])
-  @@index([aiScore])
-  @@index([viralScore])
-  @@index([momentumScore])
-  @@index([velocity])
-}
-
-model Tag {
-  id     String     @id @default(cuid())
-  name   String     @unique
-  trends TrendTag[]
-}
-
-model TrendTag {
-  trendId String
-  tagId   String
-
-  trend Trend @relation(fields: [trendId], references: [id], onDelete: Cascade)
-  tag   Tag   @relation(fields: [tagId], references: [id], onDelete: Cascade)
-
-  @@id([trendId, tagId])
-}
-
-model Video {
-  id           String   @id @default(cuid())
-  trendId      String
-  tiktokId     String?  @unique
-  url          String?
-  thumbnail    String?
-  views        String   @default("0")
-  likes        String   @default("0")
-  shares       String   @default("0")
-  comments     String   @default("0")
-  duration     String?
-  viralScore   Float    @default(0)
-  shortsScore  Float    @default(0)
-  curiosityGap String?
-  // AI Analysis
-  engagementRate Float?
-  retentionRate  Float?
-  watchTime      Float?
-  // Trend Score
-  trendScore     Float    @default(0)
-  publishedAt  DateTime @default(now())
-  scrapedAt    DateTime @default(now())
-
-  trend Trend @relation(fields: [trendId], references: [id], onDelete: Cascade)
-  // Daily snapshots for historical data
-  dailySnapshots VideoDailySnapshot[]
-
-  @@index([trendId])
-  @@index([scrapedAt])
-  @@index([viralScore])
-  @@index([trendScore])
-}
-
+// ============================================
+// 核心模型：创作者
+// ============================================
 model Creator {
-  id                   String   @id @default(cuid())
-  tiktokId            String?  @unique
-  username            String   @unique
-  displayName         String
-  avatar              String?
-  followers           Int      @default(0)
-  following           Int      @default(0)
-  likes               Int      @default(0)
-  niche               String?
-  bio                 String?
-  country             String   @default("US")
-  isVerified          Boolean  @default(false)
-  // AI Metrics
-  momentumScore       Float    @default(0)
-  engagementRate      Float    @default(0)
-  avgViews            Int      @default(0)
-  viralVideoRate      Float    @default(0)
-  audienceOverlap     Json?
-  predictedGrowth7d   Float?
-  predictedGrowth30d  Float?
-  lastAnalyzed        DateTime?
-  updatedAt           DateTime @updatedAt
+  id              String   @id @default(cuid())
+  username        String   @unique
+  displayName     String
+  avatar          String?
+  bio             String?
 
-  trends TrendCreator[]
-  videos CreatorVideo[]
-  watchlists Watchlist[]
-  // Daily snapshots for historical data
-  dailySnapshots CreatorDailySnapshot[]
+  // 粉丝数据
+  followers       Int      @default(0)
+  following       Int      @default(0)
+  likes           Int      @default(0)
 
-  @@index([momentumScore])
-  @@index([followers])
-  @@index([niche])
-}
+  // 账号信息
+  tiktokId        String?  @unique
+  niche           String?  // 领域分类
+  country         String   @default("US")
+  isVerified      Boolean  @default(false)
 
-model TrendCreator {
-  trendId   String
-  creatorId String
-  role      String   @default("early")
+  // 综合评分（每日更新）
+  accountScore    Float    @default(0)    // 账号价值总分
+  engagementRate  Float    @default(0)    // 平均互动率
+  growthVelocity  Float    @default(0)    // 成长速度
 
-  trend   Trend   @relation(fields: [trendId], references: [id], onDelete: Cascade)
-  creator Creator @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  // 元数据
+  lastAnalyzed    DateTime?
+  updatedAt       DateTime @updatedAt
+  createdAt       DateTime @default(now())
 
-  @@id([trendId, creatorId])
-}
+  // 关系
+  videos          Video[]
+  dailySnapshots  CreatorDailySnapshot[]
 
-model CreatorVideo {
-  id        String   @id @default(cuid())
-  creatorId String
-  videoId   String
-
-  creator Creator @relation(fields: [creatorId], references: [id], onDelete: Cascade)
-
-  @@index([creatorId])
-}
-
-model Hashtag {
-  id          String   @id @default(cuid())
-  name        String
-  country     String   @default("US")
-  views       String   @default("0")
-  videos      Int      @default(0)
-  growthRate  Float    @default(0)
-  category    String?
-  isRising    Boolean  @default(false)
-  // AI Analysis
-  velocity    Float    @default(0)
-  engagementRate Float?
-  avgViews    Int?
-  viralScore  Float?
-  relatedHashtags Json?
-  scrapedAt   DateTime @default(now())
-
-  // Relations
-  watchlists  Watchlist[]
-  // Daily snapshots for historical data
-  dailySnapshots HashtagDailySnapshot[]
-
-  @@unique([name, country])
-  @@index([country])
-  @@index([isRising])
-  @@index([growthRate])
-  @@index([velocity])
-}
-
-model Sound {
-  id          String   @id @default(cuid())
-  tiktokId    String?  @unique
-  title       String
-  author      String?
-  thumbnail   String?
-  country     String   @default("US")
-  uses        Int      @default(0)
-  growthRate  Float    @default(0)
-  isViral     Boolean  @default(false)
-  // AI Analysis
-  velocity    Float?
-  viralScore  Float?
-  trendingSince DateTime?
-  scrapedAt   DateTime @default(now())
-
-  @@index([isViral])
-  @@index([uses])
-  @@index([viralScore])
-}
-
-model TrendAnalysis {
-  id                   String   @id @default(cuid())
-  trendId              String?
-  hashtagId            String?
-  soundId              String?
-  trendScore           Float    @default(0)
-  velocity             Float    @default(0)
-  predictedEngagement  Int?
-  forecast7d           Float?
-  forecast30d          Float?
-  momentumDirection    String?  // "accelerating", "stable", "declining"
-  riskLevel            String?  // "low", "medium", "high"
-  opportunityWindow    String?
-  competitorSaturation Float?
-  lastUpdated          DateTime @updatedAt
-
-  @@index([trendScore])
-  @@index([velocity])
-  @@index([lastUpdated])
-}
-
-model ScrapeLog {
-  id        String   @id @default(cuid())
-  type      String
-  status    String
-  count     Int      @default(0)
-  error     String?
-  metadata  Json?
-  startedAt DateTime @default(now())
-  endedAt   DateTime?
-}
-
-// Daily country statistics - word cloud and booming keywords
-model CountryDailyStats {
-  id            String   @id @default(cuid())
-  country       String
-  date          DateTime @default(now())
-
-  // Word cloud data - top hashtags with scores
-  wordCloud     Json?    // Array of {name, weight, viralScore, trendDirection}
-
-  // Booming keywords - fastest growing
-  boomingKeywords Json?  // Array of {name, growthRate, views, rank}
-
-  // Top performing hashtags for the day
-  topHashtags   Json?    // Array of hashtag names
-
-  // Statistics
-  totalVideos   Int      @default(0)
-  totalViews    String   @default("0")
-  avgEngagement Float?
-
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  @@unique([country, date])
-  @@index([country])
-  @@index([date])
-}
-
-// User Authentication Models
-model User {
-  id            String   @id @default(cuid())
-  username      String   @unique
-  email         String   @unique
-  passwordHash  String
-  emailVerified Boolean  @default(false)
-  createdAt     DateTime @default(now())
-  lastLogin     DateTime?
-  updatedAt     DateTime @updatedAt
-
-  // Relations
-  sessions          Session[]
-  emailVerifications EmailVerification[]
-  passwordResets    PasswordReset[]
-  watchlists        Watchlist[]
-  alerts            Alert[]
-  analyses          UserAnalysis[]
-  analyzeTrackings  AnalyzeTracking[]
-  dailyAnalyzeLimits DailyAnalyzeLimit[]
-
-  @@index([email])
   @@index([username])
+  @@index([niche])
+  @@index([country])
+  @@index([accountScore])
+  @@index([growthVelocity])
 }
 
-model Session {
-  id        String   @id @default(cuid())
-  userId    String
-  token     String   @unique
-  expiresAt DateTime
-  createdAt DateTime @default(now())
+// ============================================
+// 核心模型：视频
+// ============================================
+model Video {
+  id              String   @id @default(cuid())
+  tiktokId        String?  @unique
+  url             String?
+  thumbnail       String?
+  caption         String?  // 视频文案
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // 核心指标
+  views           BigInt   @default(0)
+  likes           BigInt   @default(0)
+  comments        BigInt   @default(0)
+  shares          BigInt   @default(0)
 
-  @@index([userId])
-  @@index([token])
-}
+  // 计算指标
+  engagementRate  Float  @default(0)     // 互动率
+  shareRate       Float   @default(0)     // 分享率
 
-model EmailVerification {
-  id        String    @id @default(cuid())
-  userId    String
-  token     String    @unique
-  expiresAt DateTime
-  verifiedAt DateTime?
-  createdAt DateTime  @default(now())
+  // 潜力评分（核心功能）
+  viralScore      Float   @default(0)     // 爆款潜力分 (0-100)
+  isPotential     Boolean @default(false) // 是否潜力视频
+  isViral         Boolean @default(false)  // 是否已爆
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // 增速指标（用于预测）
+  viewVelocity    Float   @default(0)     // 播放量增速
+  engagementVelocity Float @default(0)    // 互动增速
 
-  @@index([userId])
-  @@index([token])
-}
+  // 时间
+  publishedAt     DateTime
+  scrapedAt       DateTime @default(now())
 
-model PasswordReset {
-  id        String    @id @default(cuid())
-  userId    String
-  token     String    @unique
-  expiresAt DateTime
-  usedAt    DateTime?
-  createdAt DateTime  @default(now())
+  // 关系
+  creatorId       String?
+  creator         Creator? @relation(fields: [creatorId], references: [id])
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  hashtags        VideoHashtag[]
+  dailySnapshots  VideoDailySnapshot[]
 
-  @@index([userId])
-  @@index([token])
-}
-
-// Watchlist Model
-model Watchlist {
-  id        String   @id @default(cuid())
-  userId    String
-  trendId   String?
-  hashtagId String?
-  creatorId String?
-  videoId   String?
-  notes     String?
-  alertEnabled Boolean @default(false)
-  createdAt DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  trend Trend? @relation(fields: [trendId], references: [id], onDelete: Cascade)
-  hashtag Hashtag? @relation(fields: [hashtagId], references: [id], onDelete: Cascade)
-  creator Creator? @relation(fields: [creatorId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([trendId])
-  @@index([hashtagId])
   @@index([creatorId])
+  @@index([viralScore])
+  @@index([isPotential])
+  @@index([publishedAt])
+  @@index([scrapedAt])
 }
 
-// Enhanced Alert System
-model Alert {
-  id          String   @id @default(cuid())
-  userId      String
-  type        String   // viral_spike, new_trend, momentum_change, threshold
-  targetType  String?  // trend, hashtag, creator, video
-  targetId    String?
-  threshold   Float?
-  isActive    Boolean  @default(true)
-  frequency   String   @default("daily") // daily, weekly, realtime
-  lastSent    DateTime?
-  createdAt   DateTime @default(now())
+// ============================================
+// 核心模型：趋势（音乐/话题/挑战）
+// ============================================
+model Trend {
+  id              String   @id @default(cuid())
+  name            String
+  type            TrendType // MUSIC, HASHTAG, CHALLENGE
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // 趋势指标
+  growthRate      Float    @default(0)
+  velocity        Float    @default(0)     // 上升速度
+  saturation      Float    @default(0)     // 饱和度 (0-100)
+  volume          Int      @default(0)     // 总视频数
 
-  @@index([userId])
-  @@index([isActive])
-}
+  // 预测
+  viralScore      Float    @default(0)
+  isRising        Boolean  @default(false)
+  predictedPeak   DateTime?                // 预测峰值时间
 
-// User Analysis History
-model UserAnalysis {
-  id          String   @id @default(cuid())
-  userId      String
-  type        String   // video, creator, hashtag
-  targetId    String
-  targetUrl   String?
-  data        Json?
-  createdAt   DateTime @default(now())
+  // 时间
+  trendingSince   DateTime?
+  updatedAt       DateTime @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // 关系
+  videos          VideoTrend[]
 
-  @@index([userId])
-  @@index([createdAt])
-}
-
-model UserAlert {
-  id          String   @id @default(cuid())
-  userId      String
-  trendId     String?
-  hashtagId   String?
-  creatorId   String?
-  alertType   String   // "viral_spike", "new_trend", "momentum_change"
-  threshold   Float?
-  isActive    Boolean  @default(true)
-  frequency   String   @default("daily") // "daily", "weekly", "realtime"
-  lastSent    DateTime?
-  createdAt   DateTime @default(now())
-
-  @@index([userId])
-  @@index([alertType])
-  @@index([isActive])
-}
-
-model Report {
-  id          String   @id @default(cuid())
-  userId      String
-  title       String
-  type        String   // "viral", "trend", "creator", "competitor"
-  data        Json
-  isShareable Boolean  @default(true)
-  shareToken  String?  @unique
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@index([userId])
-  @@index([shareToken])
+  @@unique([name, type])
   @@index([type])
+  @@index([viralScore])
+  @@index([isRising])
 }
 
 // ============================================
-// DAILY SNAPSHOT MODELS - For Historical Data
+// 每日快照：追踪历史数据
 // ============================================
-
-// Task 1: Creator Daily Snapshot
 model CreatorDailySnapshot {
-  id            String   @id @default(cuid())
-  creatorId     String
-  followers     Int
-  following     Int
-  totalLikes    BigInt
-  totalVideos   Int
-  // AI Metrics for trend calculation
-  trendScore    Float    @default(0)
-  createdAt     DateTime @default(now())
+  id              String   @id @default(cuid())
+  creatorId       String
+  creator         Creator  @relation(fields: [creatorId], references: [id], onDelete: Cascade)
 
-  creator Creator @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  // 当日数据
+  followers       Int
+  following       Int
+  likes           Int
+  engagementRate  Float
+
+  // 成长指标
+  followerGrowth  Float    @default(0)   // 粉丝增长率
+  trendScore      Float    @default(0)
+
+  collectedAt     DateTime @default(now())
 
   @@index([creatorId])
-  @@index([createdAt])
-  @@index([trendScore])
+  @@index([collectedAt])
 }
 
-// Task 2: Video Daily Snapshot
 model VideoDailySnapshot {
-  id            String   @id @default(cuid())
-  videoId       String
-  views         BigInt
-  likes         BigInt
-  comments      BigInt
-  shares        BigInt
-  // Growth metrics
-  viewsGrowth   Float    @default(0)
-  likesGrowth   Float    @default(0)
-  sharesGrowth  Float    @default(0)
-  commentsGrowth Float   @default(0)
-  // Trend Score
-  trendScore    Float    @default(0)
-  collectedAt   DateTime @default(now())
+  id              String   @id @default(cuid())
+  videoId         String
+  video           Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
 
-  video Video @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  // 当日数据
+  views           BigInt
+  likes           BigInt
+  comments        BigInt
+  shares          BigInt
+
+  // 增长指标
+  viewsGrowth     Float    @default(0)
+  likesGrowth     Float    @default(0)
+  engagementRate  Float
+  viralScore      Float
+
+  collectedAt     DateTime @default(now())
 
   @@index([videoId])
   @@index([collectedAt])
-  @@index([trendScore])
 }
 
-// Task 3: Hashtag Daily Snapshot
-model HashtagDailySnapshot {
-  id            String   @id @default(cuid())
-  hashtagId     String
-  usageCount    BigInt
-  videoCount    Int      @default(0)
-  viewCount     BigInt   @default(0)
-  // Growth metrics
-  growthRate    Float    @default(0)
-  trendScore    Float    @default(0)
-  collectedAt   DateTime @default(now())
+// ============================================
+// 关联表
+// ============================================
+model VideoHashtag {
+  id        String @id @default(cuid())
+  videoId   String
+  hashtagId String
+  video     Video  @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  hashtag   Trend  @relation(fields: [hashtagId], references: [id], onDelete: Cascade)
 
-  hashtag Hashtag @relation(fields: [hashtagId], references: [id], onDelete: Cascade)
-
+  @@index([videoId])
   @@index([hashtagId])
-  @@index([collectedAt])
-  @@index([trendScore])
 }
 
-// SECTION 8: Opportunity Score Tracking
-model OpportunityScore {
-  id              String   @id @default(cuid())
-  // Can be trend, hashtag, or niche
-  targetType      String   // "trend", "hashtag", "niche"
-  targetId        String?
-  name            String
-  // Demand metrics
-  demandScore     Float    @default(0)  // Based on views, likes, growth
-  // Competition metrics
-  competitionScore Float   @default(0)  // Based on creatorCount, videoCount
-  // Opportunity = Demand / Competition
-  opportunityScore Float   @default(0)
-  // Metadata
-  country         String   @default("US")
-  calculatedAt    DateTime @default(now())
-  expiresAt       DateTime?
+model VideoTrend {
+  id        String @id @default(cuid())
+  videoId   String
+  trendId   String
+  video     Video  @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  trend     Trend  @relation(fields: [trendId], references: [id], onDelete: Cascade)
 
-  @@index([targetType])
-  @@index([opportunityScore])
-  @@index([calculatedAt])
-  @@index([country])
+  @@index([videoId])
+  @@index([trendId])
 }
 
-// Analyze Tracking - Limit free analyzes for non-logged-in users
-model AnalyzeTracking {
+// ============================================
+// 用户系统
+// ============================================
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  username      String   @unique
+  passwordHash  String
+
+  // 用户追踪的创作者
+  trackedCreators String[] // 存储creator usernames
+
+  // 订阅
+  plan          Plan     @default(FREE)
+
+  // 元数据
+  emailVerified Boolean  @default(false)
+  lastLogin     DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// ============================================
+// 枚举类型
+// ============================================
+enum TrendType {
+  MUSIC
+  HASHTAG
+  CHALLENGE
+  SOUND
+}
+
+enum Plan {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
+// ============================================
+// 日志记录
+// ============================================
+model ScrapeLog {
   id          String   @id @default(cuid())
-  userId      String?  // null for anonymous users
-  fingerprint String?  // browser fingerprint for anonymous tracking
-  ipAddress   String?
-  type        String   // "video", "creator", "hashtag"
-  targetId    String?  // video/creator ID
-  targetUrl   String?  // URL that was analyzed
-  data        Json?    // analysis result data
-  isGuest     Boolean  @default(true)
-  createdAt   DateTime @default(now())
-
-  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([fingerprint])
-  @@index([ipAddress])
-  @@index([createdAt])
-}
-
-// Daily Analyze Limit per IP/User
-model DailyAnalyzeLimit {
-  id          String   @id @default(cuid())
-  userId      String?  // null for IP-based tracking
-  ipAddress   String?
-  date        String   // YYYY-MM-DD format
+  type        String   // scrape类型
+  status      String   // success/error
   count       Int      @default(0)
+  error       String?
+  metadata    Json?
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
 
-  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, date])
-  @@unique([ipAddress, date])
-  @@index([ipAddress])
-  @@index([date])
+  @@index([type])
+  @@index([createdAt])
 }

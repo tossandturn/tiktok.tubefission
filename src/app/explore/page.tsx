@@ -1,9 +1,28 @@
-"use client";
-
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import ExploreContent from "./explore-content";
 import { DailyInsightsSection } from "@/components/daily-insights-section";
 import { Loader2 } from "lucide-react";
+import { ExploreBreadcrumb } from "@/components/breadcrumbs";
+
+export const metadata: Metadata = {
+  title: "Explore TikTok Trends | Discover Viral Content",
+  description:
+    "Explore trending TikTok content across categories and countries. Find viral trends, popular creators, trending hashtags, and viral sounds with real-time analytics.",
+  keywords: [
+    "TikTok explore",
+    "trend discovery",
+    "viral content",
+    "TikTok search",
+    "trending hashtags",
+    "popular creators",
+  ],
+  openGraph: {
+    title: "Explore TikTok Trends | TikTok Intelligence",
+    description: "Discover viral trends and trending content across categories",
+    images: ["/og-explore.jpg"],
+  },
+};
 
 function ExploreLoading() {
   return (
@@ -17,6 +36,7 @@ function ExploreLoading() {
 export default function ExplorePage() {
   return (
     <div className="min-h-screen bg-black">
+      <ExploreBreadcrumb />
       {/* Daily Insights Section */}
       <DailyInsightsSection />
 

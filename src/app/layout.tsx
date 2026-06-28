@@ -4,6 +4,7 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import { NavBar } from "@/components/nav-bar";
 import { StructuredData } from "@/components/structured-data";
+import { FAQStructuredData, platformFAQs } from "@/components/faq-structured-data";
 import { CountryProvider } from "@/components/country-context";
 import { SessionProvider } from "@/components/session-provider";
 import TikTokAnalyzerBar from "@/components/tiktok-analyzer-bar";
@@ -109,6 +110,7 @@ export default function RootLayout({
         <StructuredData type="organization" />
         <StructuredData type="softwareApplication" />
         <StructuredData type="product" />
+        <FAQStructuredData faqs={platformFAQs} />
         <script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2329966945529740"

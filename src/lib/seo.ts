@@ -240,26 +240,89 @@ export function calculateTrendScore(
 }
 
 /**
- * Calculate opportunity score
- * Section 8: Opportunity Score Formula
+ * Generate FAQ structured data
  */
-export function calculateOpportunityScore(
-  views: number,
-  likes: number,
-  growth: number,
-  creatorCount: number,
-  videoCount: number
-): number {
-  // Demand = views + likes + growth
-  const demand = views + likes + growth * 1000;
+export interface FAQItem {
+  question: string;
+  answer: string;
+}
 
-  // Competition = creatorCount + videoCount
-  const competition = creatorCount + videoCount;
+export function generateFAQSchema(faqs: FAQItem[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((faq) => ({
+      "@type": "Question",
+      name: faq.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: faq.answer,
+      },
+    })),
+  };
+}
 
-  if (competition === 0) return 0;
+/**
+ * Generate hashtag schema
+ */
+export function generateHashtagSchema(
+  name: string,
+  views: string,
+  videos: number,
+  url: string
+) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Thing",
+    name: `#${name}`,
+    description: `TikTok hashtag #${name} with ${views} views across ${videos} videos`,
+    url,
+    interactionStatistic: {
+      "@type": "InteractionCounter",
+      interactionType: "https://schema.org/ViewAction",
+      userInteractionCount: views,
+    },
+  };
+}
 
-  // Opportunity = demand / competition
-  const score = demand / competition;
+/**
+ * Generate dataset schema for analytics pages
+ */
+export function generateDatasetSchema(
+  name: string,
+  description: string,
+  url: string,
+  variables: string[]
+) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    name,
+    description,
+    url,
+    variableMeasured: variables,
+    creator: {
+      "@type": "Organization",
+      name: "TikTok Intelligence",
+    },
+  };
+}
 
-  return Math.round(score * 100) / 100; // Round to 2 decimal places
+/**
+ * Generate search action schema for site search
+ */
+export function generateSearchActionSchema() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    url: BASE_URL,
+    potentialAction: {
+      "@type": "SearchAction",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate: `${BASE_URL}/explore?q={search_term_string}`,
+      },
+      "query-input": "required name=search_term_string",
+    },
+  };
 }
