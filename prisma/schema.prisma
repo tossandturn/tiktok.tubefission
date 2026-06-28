@@ -101,15 +101,24 @@ model Video {
 // 核心模型：趋势（音乐/话题/挑战）
 // ============================================
 model Trend {
-  id   String    @id @default(cuid())
-  name String
-  type TrendType // MUSIC, HASHTAG, CHALLENGE
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  title       String
+  name        String
+  type        TrendType // MUSIC, HASHTAG, CHALLENGE
+  description String?
+  thumbnail   String?
+  category    String?
+  country     String    @default("US")
 
   // 趋势指标
   growthRate Float @default(0)
   velocity   Float @default(0) // 上升速度
   saturation Float @default(0) // 饱和度 (0-100)
   volume     Int   @default(0) // 总视频数
+  views      String @default("0")
+  creators   Int    @default(0)
+  avgViews   String @default("0")
 
   // 预测
   viralScore    Float     @default(0)
@@ -117,6 +126,7 @@ model Trend {
   predictedPeak DateTime? // 预测峰值时间
 
   // 时间
+  publishedAt   DateTime  @default(now())
   trendingSince DateTime?
   updatedAt     DateTime  @updatedAt
 
@@ -128,6 +138,7 @@ model Trend {
   @@index([type])
   @@index([viralScore])
   @@index([isRising])
+  @@index([slug])
 }
 
 // ============================================
