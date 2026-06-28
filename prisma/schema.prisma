@@ -148,12 +148,13 @@ model Trend {
 // Hashtag model for separate hashtag tracking
 model Hashtag {
   id        String   @id @default(cuid())
-  name      String   @unique
+  name      String
   views     String   @default("0")
   videos    Int      @default(0)
   country   String   @default("US")
   scrapedAt DateTime @default(now())
 
+  @@unique([name, country])
   @@index([name])
   @@index([views])
 }
@@ -203,6 +204,38 @@ model VideoDailySnapshot {
 
   @@index([videoId])
   @@index([collectedAt])
+}
+
+model HashtagDailySnapshot {
+  id        String   @id @default(cuid())
+  hashtagId String
+  views     String   @default("0")
+  videos    Int      @default(0)
+  growth    Float    @default(0)
+  collectedAt DateTime @default(now())
+
+  @@index([hashtagId])
+  @@index([collectedAt])
+}
+
+// ============================================
+// 音乐/声音
+// ============================================
+model Sound {
+  id            String   @id @default(cuid())
+  title         String
+  author        String?
+  uses          Int      @default(0)
+  views         String   @default("0")
+  growthRate    Float    @default(0)
+  viralScore    Float    @default(0)
+  isViral       Boolean  @default(false)
+  thumbnail     String?
+  scrapedAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([uses])
+  @@index([viralScore])
 }
 
 // ============================================
