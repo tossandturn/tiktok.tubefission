@@ -357,10 +357,11 @@ export async function POST(request: NextRequest) {
 
         // Get or create the "analyzed" trend
         const trend = await prisma.trend.upsert({
-          where: { id: "analyzed" },
+          where: { slug: "analyzed" },
           create: {
             id: "analyzed",
             slug: "analyzed",
+            name: "Analyzed Videos",
             title: "Analyzed Videos",
             description: "Videos analyzed via URL",
             thumbnail: thumbnail || "",
@@ -370,6 +371,7 @@ export async function POST(request: NextRequest) {
             creators: 0,
             avgViews: "0",
             publishedAt: new Date(),
+            type: "HASHTAG" as const,
           },
           update: {},
         });
