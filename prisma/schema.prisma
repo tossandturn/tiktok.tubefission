@@ -115,8 +115,8 @@ model Trend {
   id          String    @id @default(cuid())
   slug        String    @unique
   title       String
-  name        String
-  type        TrendType // MUSIC, HASHTAG, CHALLENGE
+  name        String?   // 名称
+  type        TrendType? // MUSIC, HASHTAG, CHALLENGE
   description String?
   thumbnail   String?
   category    String?
@@ -139,7 +139,7 @@ model Trend {
   // AI & Analysis fields
   isViral          Boolean  @default(false)
   isNew            Boolean  @default(false)
-  aiScore          Float    @default(0)
+  aiScore          Float?   @default(0)
   aiPrediction     String?
   opportunityScore Float    @default(0)
   whyItBlowsUp     String?
@@ -283,7 +283,7 @@ model Sound {
   thumbnail     String?
   trendingSince DateTime?
   scrapedAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  updatedAt     DateTime? @updatedAt
 
   @@index([uses])
   @@index([viralScore])
