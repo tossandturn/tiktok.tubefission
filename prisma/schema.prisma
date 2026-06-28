@@ -141,6 +141,19 @@ model Trend {
   @@index([slug])
 }
 
+// Hashtag model for separate hashtag tracking
+model Hashtag {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  views     String   @default("0")
+  videos    Int      @default(0)
+  country   String   @default("US")
+  scrapedAt DateTime @default(now())
+
+  @@index([name])
+  @@index([views])
+}
+
 // ============================================
 // 每日快照：追踪历史数据
 // ============================================
