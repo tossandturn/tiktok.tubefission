@@ -85,12 +85,14 @@ model Video {
   // 关系
   creatorId String?
   creator   Creator? @relation(fields: [creatorId], references: [id])
+  trendId   String?
 
   hashtags       VideoHashtag[]
   dailySnapshots VideoDailySnapshot[]
   VideoTrend     VideoTrend[]
 
   @@index([creatorId])
+  @@index([trendId])
   @@index([viralScore])
   @@index([isPotential])
   @@index([publishedAt])
