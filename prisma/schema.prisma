@@ -29,9 +29,11 @@ model Creator {
   isVerified Boolean @default(false)
 
   // 综合评分（每日更新）
-  accountScore   Float @default(0) // 账号价值总分
-  engagementRate Float @default(0) // 平均互动率
-  growthVelocity Float @default(0) // 成长速度
+  accountScore       Float   @default(0) // 账号价值总分
+  engagementRate     Float   @default(0) // 平均互动率
+  growthVelocity     Float   @default(0) // 成长速度
+  momentumScore      Float? // 动量评分
+  predictedGrowth7d  Float? // 7天预测增长
 
   // 元数据
   lastAnalyzed DateTime?
